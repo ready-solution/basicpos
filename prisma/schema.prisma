@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Order {
+  Id            String        @id @default(cuid())
+  InvoiceNo     String
+  PaymentType   String
+  SubTotal      Float
+  DiscItemTotal Float
+  Total         Float
+  Status        String
+  isPrint       Boolean
+  isEmail       Boolean
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  OrderDetails  OrderDetail[]
+}
+
+model OrderDetail {
+  Id         Int    @id @default(autoincrement())
+  OrderId    String
+  Name       String
+  Qty        Int
+  Price      Float
+  Discount   Float
+  TotalPrice Float
+  Order      Order  @relation(fields: [OrderId], references: [Id])
+}
+
+model Cart {
+  Id         String      @id @default(cuid())   // Unique cart ID
+  Status     String      // Status could be 'active', 'completed', etc.
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  CartItems  CartItem[]  // One-to-many relation with CartItem
+}
+
+model CartItem {
+  Id         Int        @id @default(autoincrement())
+  CartId     String     // Reference to the Cart
+  ProductId  Int        // Reference to the Product
+  Quantity   Int        // The quantity of the product in the cart
+  Price      Float      // Price of the product at the time it was added to the cart
+  TotalPrice Float      // Total price (quantity * price)
+  Discount   Float?
+  Cart       Cart       @relation(fields: [CartId], references: [Id])
+  Product    Product    @relation(fields: [ProductId], references: [Id])
+}
+
+model Product {
+  Id         Int      @id @default(autoincrement())
+  Name       String
+  Slug       String   @unique
+  Price      Float
+  Status     String
+  Enabled    Boolean
+  categoryId Int
+  Category   Category @relation(fields: [categoryId], references: [Id])
+  CartItems  CartItem[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Category {
+  Id       Int       @id @default(autoincrement())
+  Name     String
+  Slug     String    @unique
+  products Product[]
+}
