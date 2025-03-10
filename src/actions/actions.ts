@@ -215,3 +215,83 @@ export async function confirmPayment(id: string) {
 
     redirect(`/order/payment/${id}`)
 };
+
+export async function addProduct(formData: FormData) {
+    const productName = formData.get("product") as string;
+    const baseSlug = productName.replace(/\s+/g, "-").toLowerCase();
+    let slug = baseSlug;
+
+    const existingProduct = await prisma.product.findUnique({
+        where: {
+            Slug: slug
+        }
+    });
+
+    if (existingProduct) {
+        let counter = 1;
+        while (await prisma.product.findUnique({
+            where: {
+                Slug: `${baseSlug}-${counter}`
+            }
+        })) {
+            counter++;
+        }
+        slug = `${baseSlug}-${counter}`;
+    }
+
+    await prisma.product.create({
+        data: {
+            Name: productName,
+            Slug: slug,
+            Price: Number(formData.get("price") as string),
+            Status: formData.get("status") as string,
+            Enabled: Boolean(formData.get("enable") as string),
+            categoryId: Number(formData.get("category") as string),
+        }
+    });
+
+    revalidatePath("/product");
+};
+
+export async function excelProduct(products: any[]) {
+    
+    const plainProducts = await Promise.all(
+        products.map(async (product) => {
+            let slug = product.name.replace(/\s+/g, "-").toLowerCase(); // Create the initial slug
+            let counter = 1;
+
+            // Check if the slug already exists
+            let existingProduct = await prisma.product.findUnique({
+                where: {
+                    Slug: slug,
+                },
+            });
+
+            // If the slug exists, append a counter to make it unique
+            while (existingProduct) {
+                slug = `${slug}-${counter}`;
+                existingProduct = await prisma.product.findUnique({
+                    where: {
+                        Slug: slug,
+                    },
+                });
+                counter++;
+            }
+
+            return {
+                Name: product.name as string,
+                Slug: slug,
+                Price: product.price,
+                Status: product.status as string,
+                Enabled: product.enabled === 1,
+                categoryId: product.categoryid,
+            };
+        })
+    );
+
+    await prisma.product.createMany({
+        data: plainProducts, // Use the plain objects here
+    });
+
+    revalidatePath("/product")
+};

@@ -2,11 +2,16 @@ import { Params } from "next/dist/server/request/params";
 import OrderCard from "../../components/orderCard";
 import prisma from "@/lib/db";
 
-export default async function OrderIdPage({ params }: { params: Params }) {
+export default async function OrderIdPage({ params, searchParams }: { params: Params, searchParams?: Promise<{ product?: string; page?: string }> }) {
+    const resolvedSearchParams = searchParams ? await searchParams : {};
     const { id } = await params;
+    const query = resolvedSearchParams?.product || '';
     const productList = await prisma.product.findMany({
         where: {
             categoryId: Number(id),
+            Name: {
+                contains: query,
+            }
         }
     })
     return (

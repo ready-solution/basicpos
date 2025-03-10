@@ -20,7 +20,7 @@ const routes = [
 ]
 export default function Nav() {
     return (
-        <div className="bg-blue-100 flex flex-col space-y-2 p-2 min-h-screen">
+        <div className="bg-blue-100 flex flex-col space-y-2 p-2 h-[100vh] fixed left-0">
             {
                 routes.map((route, idx) => (
                     <Link href={route.url} key={idx} className="bg-red-100 p-1 hover:bg-green-100">

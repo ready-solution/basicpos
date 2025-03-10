@@ -3,6 +3,7 @@ import CatCont from "../components/catContainer";
 import CartContainer from "../components/cartContainer";
 import TotalContainer from "../components/totalContainer";
 import { Suspense } from "react";
+import Search from "./components/search";
 
 export const metadata: Metadata = {
     title: "Order"
@@ -13,9 +14,11 @@ export default function OrderLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+
     return (
         <div className="w-full min-h-screen flex">
             <div className="bg-cyan-100 flex-3 p-5 space-y-5">
+                <Search placeholder="search products.." />
                 <CatCont />
                 <Suspense>
                     {children}

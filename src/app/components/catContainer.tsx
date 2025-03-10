@@ -5,19 +5,29 @@ export default async function CatCont() {
     const categories = await prisma.category.findMany();
 
     return (
-        <div className="space-x-3 bg-orange-200">
-            <Link href={'/order'} className="hover:bg-green-100 p-2">All</Link>
-            {
-                categories.map((cat, idx) => (
+        <div className="overflow-x-auto">
+
+            <div className="border-b border-gray-200">
+                <nav className="flex flex-wrap gap-6 w-full">
                     <Link
-                        href={`/order/${cat.Id}`}
-                        key={idx}
-                        className="hover:bg-green-100 p-2"
+                        href='/order'
+                        className="shrink-0 border border-transparent p-3 text-sm font-medium text-gray-500 hover:text-gray-700"
                     >
-                        {cat.Name}
+                        All
                     </Link>
-                ))
-            }
+                    {
+                        categories.map((cat, idx) => (
+                            <Link
+                                href={`/order/${cat.Id}`}
+                                key={idx}
+                                className="shrink-0 border border-transparent p-3 text-sm font-medium text-gray-500 hover:text-gray-700"
+                            >
+                                {cat.Name}
+                            </Link>
+                        ))
+                    }
+                </nav>
+            </div>
         </div>
     )
 }
