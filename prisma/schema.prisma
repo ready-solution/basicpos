@@ -29,48 +29,67 @@ model Order {
 }
 
 model OrderDetail {
-  Id         Int    @id @default(autoincrement())
+  Id         Int             @id @default(autoincrement())
   OrderId    String
-  Name       String
+  ProductId  Int
+  VariantId  Int?
   Qty        Int
   Price      Float
   Discount   Float
   TotalPrice Float
-  Order      Order  @relation(fields: [OrderId], references: [Id])
+  Order      Order           @relation(fields: [OrderId], references: [Id])
+  Product    Product         @relation(fields: [ProductId], references: [Id])
+  Variant    ProductVariant? @relation(fields: [VariantId], references: [Id]) // Optional relation to ProductVariant
 }
 
 model Cart {
-  Id         String      @id @default(cuid())   // Unique cart ID
-  Status     String      // Status could be 'active', 'completed', etc.
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  CartItems  CartItem[]  // One-to-many relation with CartItem
+  Id        String     @id @default(cuid())
+  Status    String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  CartItems CartItem[] // One-to-many relation with CartItem
 }
 
 model CartItem {
-  Id         Int        @id @default(autoincrement())
-  CartId     String     // Reference to the Cart
-  ProductId  Int        // Reference to the Product
-  Quantity   Int        // The quantity of the product in the cart
-  Price      Float      // Price of the product at the time it was added to the cart
-  TotalPrice Float      // Total price (quantity * price)
+  Id         Int             @id @default(autoincrement())
+  CartId     String // Reference to the Cart
+  ProductId  Int // Reference to the Product
+  VariantId  Int?
+  Quantity   Int // The quantity of the product in the cart
+  Price      Float // Price of the product at the time it was added to the cart
+  TotalPrice Float // Total price (quantity * price)
   Discount   Float?
-  Cart       Cart       @relation(fields: [CartId], references: [Id])
-  Product    Product    @relation(fields: [ProductId], references: [Id])
+  Cart       Cart            @relation(fields: [CartId], references: [Id])
+  Product    Product         @relation(fields: [ProductId], references: [Id])
+  Variant    ProductVariant? @relation(fields: [VariantId], references: [Id])
 }
 
 model Product {
-  Id         Int      @id @default(autoincrement())
-  Name       String
-  Slug       String   @unique
-  Price      Float
-  Status     String
-  Enabled    Boolean
-  categoryId Int
-  Category   Category @relation(fields: [categoryId], references: [Id])
-  CartItems  CartItem[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  Id          Int              @id @default(autoincrement())
+  Name        String
+  Slug        String           @unique
+  Price       Float
+  Enabled     Boolean
+  Stock       Int
+  categoryId  Int
+  Category    Category         @relation(fields: [categoryId], references: [Id])
+  Variants    ProductVariant[]
+  CartItems   CartItem[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  OrderDetail OrderDetail[]
+}
+
+model ProductVariant {
+  Id          Int           @id @default(autoincrement())
+  ProductId   Int // Reference to Product
+  Size        String? // Size of the product variant (e.g., "M", "L", "XL")
+  Color       String? // Color of the product variant (e.g., "Red", "Blue", "Black")
+  Price       Float // Price for this specific variant (if different from the main product)
+  Stock       Int // Available stock for this variant
+  Product     Product       @relation(fields: [ProductId], references: [Id])
+  OrderDetail OrderDetail[]
+  CartItem    CartItem[]
 }
 
 model Category {
