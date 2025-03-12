@@ -54,7 +54,7 @@ const total = items.reduce((acc, item) => acc + item.qty * item.price, 0);
 
 export default function ReceiptPDF() {
     return (
-        <PDFViewer style={{ width: '100%', height: '100vh' }}>
+        <PDFViewer style={{ width: '100%', height: '90vh' }}>
             <Document>
                 <Page size="A4" style={styles.page}>
                     {/* Store Information */}

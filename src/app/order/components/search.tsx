@@ -1,6 +1,7 @@
 "use client"
 
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import { FaSearch } from "react-icons/fa";
 
 export default function Search({ placeholder }: { placeholder: string }) {
     const searchParams = useSearchParams();
@@ -18,17 +19,16 @@ export default function Search({ placeholder }: { placeholder: string }) {
         replace(`${pathname}?${params.toString()}`);
     }
     return (
-        <div>
-            <div className="w-full flex justify-center space-x-5 mx-auto">
+        <div className="w-full flex justify-center">
+            <div className="relative sm:w-[100%] md:w-[60%] lg:max-w-[500px]">
                 <input
                     type="text"
-                    className="bg-white p-2 w-[60%]"
+                    className="bg-zinc-100 text-zinc-700 p-2 pl-10 w-full rounded-b-2xl focus:outline-none focus:ring-1 focus:ring-orange-600"
                     placeholder={placeholder}
-                    onChange={(e) => {
-                        handleSearch(e.target.value);
-                    }}
-                    defaultValue={searchParams.get('query')?.toString()}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    defaultValue={searchParams.get('product')?.toString()}
                 />
+                <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-400" />
             </div>
         </div>
     )

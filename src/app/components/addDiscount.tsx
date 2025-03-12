@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { MdDiscount } from "react-icons/md";
+import { FaInfoCircle } from "react-icons/fa";
 import { addDiscount } from "@/actions/actions";
 
 interface itemProps {
@@ -57,8 +58,8 @@ export default function AddDiscount({ id, discount }: itemProps) {
 
     return (
         <div>
-            <button onClick={() => handleModal()} className=" p-3 rounded-full hover:bg-amber-400 cursor-pointer">
-                <MdDiscount />
+            <button onClick={() => handleModal()} className="p-2 rounded-full hover:text-yellow-600 cursor-pointer">
+                <FaInfoCircle />
             </button>
 
             {/* MODAL */}

@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="flex">
         <Nav />
-        <div className="flex w-full pl-25">
+        <div className="flex w-full">
           {children}
         </div>
       </body>

@@ -104,6 +104,20 @@ export async function addToCart(formData: FormData) {
     revalidatePath("/order");
 }
 
+export async function clearCart(id: string) {
+    await prisma.cart.update({
+        where: {
+            Id: id
+        },
+        data: {
+            CartItems: {
+                deleteMany: {},
+            }
+        }
+    });
+    revalidatePath("/order")
+}
+
 export async function deleteFromCart(id: number) {
     await prisma.cartItem.delete({
         where: {
@@ -262,7 +276,7 @@ export async function payment(formData: FormData) {
 
     // Refresh order page
     revalidatePath("/order/payment");
-    redirect("/order/payment");
+    redirect(`/payment/${newOrder.Id}`)
 }
 
 export async function confirmPayment(id: string) {

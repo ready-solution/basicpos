@@ -24,29 +24,46 @@ export default function CategoryList({ categories }: CategoryListProps) {
         } else {
             params.set('category', slug);
         }
-
-        // Replace the current URL with the updated one without refreshing the page
         replace(`${pathname}?${params.toString()}`);
     };
 
     return (
-        <div className="flex flex-wrap gap-6 w-full">
-            <Link
-                href='/order'
-                className="shrink-0 border border-transparent p-3 text-sm font-medium text-gray-500 hover:text-gray-700 cursor-pointer"
-            >
-                All
-            </Link>
-            {
-                categories.map((cat, idx) => (
-                    <button
-                        key={idx} onClick={() => handleCategoryClick(cat.Slug)}
-                        className="shrink-0 border border-transparent p-3 text-sm font-medium text-gray-500 hover:text-gray-700 cursor-pointer"
-                    >
-                        {cat.Name}
-                    </button>
-                ))
-            }
+        <div className="w-full max-w-full overflow-x-auto">
+            {/* Buttons for larger screens */}
+            <div className="hidden sm:flex gap-4 overflow-x-auto">
+                <Link
+                    href='/order'
+                    className="shrink-0 border border-transparent py-2 text-sm font-medium text-gray-800 hover:text-orange-600 cursor-pointer"
+                >
+                    All
+                </Link>
+                {
+                    categories.map((cat, idx) => (
+                        <button
+                            key={idx} onClick={() => handleCategoryClick(cat.Slug)}
+                            className="shrink-0 border border-transparent py-2 text-sm font-medium text-gray-800 hover:text-orange-600 cursor-pointer"
+                        >
+                            {cat.Name}
+                        </button>
+                    ))
+                }
+            </div>
+
+            <div className="sm:hidden">
+                <select
+                    onChange={(e) => handleCategoryClick(e.target.value)}
+                    className="w-full p-3 text-sm font-medium text-gray-800 border border-gray-300 rounded-lg focus:outline-none"
+                >
+                    <option value="">All</option>
+                    {
+                        categories.map((cat, idx) => (
+                            <option key={idx} value={cat.Slug}>
+                                {cat.Name}
+                            </option>
+                        ))
+                    }
+                </select>
+            </div>
         </div>
     )
 }

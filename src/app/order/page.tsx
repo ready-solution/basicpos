@@ -41,11 +41,6 @@ export default async function OrderPage(props: {
     
     return (
         <div className="w-full flex flex-wrap gap-4">
-            {/* {
-                productList.map((product, idx) => (
-                    <OrderCard id={product.Id} name={product.Name} price={product.Price} key={idx} />
-                ))
-            } */}
             <OrderCard product={productList} variant={productVariant} />
         </div>
     )

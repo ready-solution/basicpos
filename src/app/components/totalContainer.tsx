@@ -26,10 +26,10 @@ export default async function TotalContainer() {
     const grandtotal = (subtotal ?? 0) - (discountValue ?? 0);
 
     return (
-        <div className="w-full flex-4 flex bg-amber-100 flex-col justify-between">
-            <div>
-                <div className="bg-red-100 px-2 flex justify-between">
-                    <p>subtotal</p>
+        <div className="w-full flex-4 flex flex-col justify-between">
+            <div className="text-sm">
+                <div className="px-2 flex justify-between py-2">
+                    <p>Subtotal</p>
                     <p>
                         {subtotal?.toLocaleString('id-ID', {
                             style: 'currency',
@@ -41,8 +41,8 @@ export default async function TotalContainer() {
                 </div>
                 {
                     discountValue != 0 ? (
-                        <div className="bg-green-100 px-2 flex justify-between">
-                            <p>discount</p>
+                        <div className="px-2 flex justify-between">
+                            <p>Discount</p>
                             <p>
                                 {discountValue?.toLocaleString('id-ID', {
                                     style: 'currency',
@@ -53,14 +53,12 @@ export default async function TotalContainer() {
                             </p>
                         </div>
                     ) : (
-                        <div className="px-2 text-sm">
-                            <p>no discount applied</p>
-                        </div>
+                        null
                     )
                 }
-                <div className="bg-red-100 px-2 flex justify-between pt-5 pb-3">
-                    <p>grand total</p>
-                    <p className="font-medium">
+                <div className="font-medium text-lg px-2 flex justify-between py-5">
+                    <p>Grand total</p>
+                    <p>
                         {grandtotal?.toLocaleString('id-ID', {
                             style: 'currency',
                             currency: 'IDR',
