@@ -65,7 +65,7 @@ export default function AddDiscount({ id, discount }: itemProps) {
             {/* MODAL */}
             {
                 isModalOpen && (
-                    <div className="fixed inset-0 flex justify-center items-center bg-white/30 backdrop-blur-md shadow-xl">
+                    <div className="fixed inset-0 flex justify-center items-center bg-black/30 backdrop-blur-md shadow-xl">
                         <div className="bg-yellow-100 rounded-md p-6 w-1/3">
                             <h2 className="text-center font-medium pb-10">Add discount</h2>
                             <div className="space-y-5 flex flex-col">

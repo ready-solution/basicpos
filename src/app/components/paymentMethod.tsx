@@ -17,17 +17,14 @@ export default function PaymentMethod() {
     };
 
     return (
-        <div className="flex justify-center">
-            <label htmlFor="payment-method" className="mr-2">
-                Payment Method:
-            </label>
+        <div className="flex flex-col w-[30%] border-t-1 mx-auto space-y-2 justify-center pt-2">
             <select
                 id="payment-method"
                 value={paymentMethod}
                 onChange={handlePaymentChange}
-                className="border p-2"
+                className="border p-2 bg-zinc-100 text-stone-700"
             >
-                <option value="">Select a payment method</option>
+                <option value="">Select payment method</option>
                 <option value="CASH">Cash</option>
                 <option value="DEBIT">Debit</option>
                 <option value="CREDIT">Credit</option>
