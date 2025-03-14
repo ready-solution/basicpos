@@ -21,9 +21,9 @@ export default async function CartContainer() {
     const cartItems = cart?.CartItems;
 
     return (
-        <div className="w-full flex-9 pb-5">
+        <div className="w-full flex-1 pb-5">
             {(cartItems?.length ?? 0) > 0 ? (
-                <div className="h-full bg-zinc-300 rounded-md max-h-[430px] space-y-2 p-2 overflow-y-auto overflow-x-hidden scrollbar-hidden">
+                <div className="h-full max-h-[60vh] rounded-md space-y-2 p-2 overflow-y-auto overflow-x-hidden scrollbar-hidden">
                     {cart?.CartItems.map((item, idx) => (
                         <CartCard
                             key={idx}
@@ -38,7 +38,7 @@ export default async function CartContainer() {
                     ))}
                 </div>
             ) : (
-                <div className="w-full bg-zinc-300 rounded-md max-h-[430px] h-full flex justify-center items-center">
+                <div className="w-full  rounded-md max-h-[60vh] h-full flex justify-center items-center">
                     <p>add an item</p>
                 </div>
             )}

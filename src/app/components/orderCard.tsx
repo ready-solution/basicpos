@@ -40,26 +40,18 @@ export default async function ProductCard({ product, variant }: ProductCardProps
                 return (
                     <div className="w-1/6 min-w-[140px]" key={x.Id}>
                         {hasVariant ? (
-                            // If product has a variant, show Link instead of Add to Cart
-                            // <Link href={`/order/${x.Id}`} target="_blank" className="text-sm w-full">
-                            //     <div className="bg-zinc-100 hover:bg-zinc-200 p-2 flex flex-col items-start">
-                            //         <p>{x.Name}</p>
-                            //         <div className="flex justify-between w-full items-end">
-                            //             <p>{x.Price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
-                            //             <FaThList  size={10} />
-                            //         </div>
-                            //     </div>
-                            // </Link>
                             <ModalCard product={x} variant={productVariants} />
                         ) : (
-                            // If product has NO variant, show Add to Cart form
                             <form action={addToCart} >
                                 <input className="hidden" type="text" name="productId" value={x.Id} readOnly />
                                 <input className="hidden" type="number" name="quantity" value={1} readOnly />
-                                <button className="w-full text-sm bg-stone-700 hover:bg-stone-800 active:bg-amber-200 cursor-pointer" type="submit">
-                                    <div className="p-2 flex flex-col items-start text-stone-100">
-                                        <h3>{x.Name}</h3>
-                                        <p>{x.Price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+                                <button className="w-full text-sm bg-white border-1 shadow-zinc-600 shadow-sm hover:bg-slate-300 active:bg-amber-200 cursor-pointer" type="submit">
+                                    <div className="p-2 flex flex-col items-start">
+                                        <h3 className="font-medium mb-3">{x.Name}</h3>
+                                        <div className="w-full flex justify-between items-end">
+                                            <p>{x.Price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+                                            <p className="text-xs">x{x.Stock}</p>
+                                        </div>
                                     </div>
                                 </button>
                             </form>

@@ -28,10 +28,10 @@ const routes = [
 export default function Nav() {
     const pathname = usePathname();
     return (
-        <div className="flex flex-col px-2 space-y-2 py-5 h-[100vh] bg-zinc-100">
+        <div className="flex flex-col h-[100vh] bg-white">
             {
                 routes.map((route, idx) => (
-                    <Link href={route.url} key={idx} className={`p-1 hover:text-orange-600 ${pathname === route.url ? 'text-orange-600' : ''}`}>
+                    <Link href={route.url} key={idx} className={`py-2 px-3 hover:text-white hover:bg-zinc-600 ${pathname === route.url ? 'bg-zinc-600 text-white' : ''}`}>
                         <div className="flex flex-row">
                             {route.icon}
                             <div className="hidden md:flex pl-3 justify-center">

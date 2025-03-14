@@ -19,15 +19,15 @@ export default function OrderLayout({
 
     return (
         <div className="w-full min-h-screen flex">
-            <div className="flex-3 max-h-screen overflow-y-auto px-5 space-y-5">
+            <div className="flex-3 bg-zinc-100 max-h-screen overflow-y-auto px-5 space-y-5">
                 <Search placeholder="search products.." />
                 <CatCont />
                 {/* <OrderNav /> */}
                 <Suspense>
-                    {children}
+                        {children}
                 </Suspense>
             </div>
-            <div className="hidden lg:flex flex-1 flex-col p-5 bg-zinc-100">
+            <div className="hidden lg:flex flex-1 flex-col p-5 bg-white">
                 <div className="w-full pb-5 flex justify-between">
                     <p className="text-lg font-medium">
                         Current Order

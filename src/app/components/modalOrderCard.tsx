@@ -3,6 +3,7 @@
 import { FaThList } from "react-icons/fa";
 import { useState } from "react";
 import { addToCart } from "@/actions/actions";
+import { motion } from "framer-motion";
 
 type Product = {
     Id: number;
@@ -66,8 +67,8 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
     return (
         <div>
             <div className="text-sm w-full cursor-pointer" onClick={() => handleModalOpen(product)}>
-                <div className="bg-stone-700 hover:bg-stone-800 p-2 flex flex-col items-start text-stone-100">
-                    <p>{product.Name}</p>
+                <div className="bg-white shadow-zinc-600 shadow-sm hover:bg-slate-300 p-2 flex flex-col items-start border-1">
+                    <p className="font-medium mb-3">{product.Name}</p>
                     <div className="flex justify-between w-full items-end">
                         <p>
                             {product.Price.toLocaleString("id-ID", {
@@ -85,80 +86,86 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
             {/* Modal */}
             {isModalOpen && selectedProduct && (
                 <div
-                    className="fixed inset-0 flex justify-center items-center bg-black/50 backdrop-blur-sm"
+                    className="fixed inset-0 flex justify-center items-center bg-black/50 backdrop-blur-xs"
                     onClick={handleModalClose} // Close the modal when clicking on the background
                 >
-                    <div
-                        className="bg-white p-6 w-[400px] shadow-lg"
-                        onClick={(e) => e.stopPropagation()} // Prevent event from bubbling up to the background
+                    <motion.div
+                        initial={{ opacity: 0.2, y: 500 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ type: 'spring', stiffness: 1000, damping: 40 }}
                     >
-                        <div className="flex flex-col justify-between pb-5 border-b mb-5">
-                            <h1 className="font-medium text-lg">{selectedProduct.Name}</h1>
-                            <p className="text-xl font-semibold">
-                                {selectedProduct.Price.toLocaleString("id-ID", {
-                                    style: "currency",
-                                    currency: "IDR",
-                                })}
-                            </p>
-                        </div>
+                        <div
+                            className="bg-white p-6 w-[400px] shadow-lg"
+                            onClick={(e) => e.stopPropagation()} // Prevent event from bubbling up to the background
+                        >
+                            <div className="flex flex-col justify-between pb-5 border-b mb-5">
+                                <h1 className="font-medium text-lg">{selectedProduct.Name}</h1>
+                                <p className="text-xl font-semibold">
+                                    {selectedProduct.Price.toLocaleString("id-ID", {
+                                        style: "currency",
+                                        currency: "IDR",
+                                    })}
+                                </p>
+                            </div>
 
-                        {/* Add to Cart Form */}
-                        <form action={addToCart} className="flex flex-col gap-3 text-sm pb-5">
-                            <input type="hidden" name="productId" value={selectedProduct.Id} readOnly />
-                            <input type="hidden" name="quantity" value={1} readOnly />
+                            {/* Add to Cart Form */}
+                            <form action={addToCart} className="flex flex-col gap-3 text-sm pb-5">
+                                <input type="hidden" name="productId" value={selectedProduct.Id} readOnly />
+                                <input type="hidden" name="quantity" value={1} readOnly />
 
-                            {/* Size Selection */}
-                            {uniqueSizes.length > 0 && (
-                                <div>
-                                    <label className="block font-semibold text-gray-700 mb-2">Size:</label>
-                                    <select
-                                        name="size"
-                                        className="w-full p-3 bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                                        onChange={handleSizeChange}
-                                        value={selectedSize ?? ""}
-                                    >
-                                        <option value="">Select Size</option>
-                                        {uniqueSizes.map((size, index) => (
-                                            <option key={index} value={size}>
-                                                {size}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-
-                            {/* Color Selection */}
-                            {uniqueColors.length > 0 && (
-                                <div>
-                                    <label className="block font-semibold text-gray-700 mb-2">Color:</label>
-                                    <select
-                                        name="color"
-                                        className="w-full p-3 bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                                        onChange={handleColorChange}
-                                        value={selectedColor ?? ""}
-                                    >
-                                        {uniqueColors.map((color, index) => {
-                                            const isDisabled = !availableColors.includes(color);
-                                            return (
-                                                <option key={index} value={color} disabled={isDisabled}>
-                                                    {color}
+                                {/* Size Selection */}
+                                {uniqueSizes.length > 0 && (
+                                    <div>
+                                        <label className="block font-semibold text-gray-700 mb-2">Size:</label>
+                                        <select
+                                            name="size"
+                                            className="w-full p-3 bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 cursor-pointer"
+                                            onChange={handleSizeChange}
+                                            value={selectedSize ?? ""}
+                                        >
+                                            <option value="">Select Size</option>
+                                            {uniqueSizes.map((size, index) => (
+                                                <option key={index} value={size}>
+                                                    {size}
                                                 </option>
-                                            );
-                                        })}
-                                    </select>
-                                </div>
-                            )}
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
 
-                            <button
-                                className={`w-full py-3 bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white font-semibold focus:outline-none transition-colors duration-200 ${isButtonDisabled ? "bg-gray-400 cursor-not-allowed" : ""
-                                    }`}
-                                type="submit"
-                                disabled={isButtonDisabled}
-                            >
-                                Add to Cart
-                            </button>
-                        </form>
-                    </div>
+                                {/* Color Selection */}
+                                {uniqueColors.length > 0 && (
+                                    <div>
+                                        <label className="block font-semibold text-gray-700 mb-2">Color:</label>
+                                        <select
+                                            name="color"
+                                            className="w-full p-3 bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 cursor-pointer"
+                                            onChange={handleColorChange}
+                                            value={selectedColor ?? ""}
+                                        >
+                                            {uniqueColors.map((color, index) => {
+                                                const isDisabled = !availableColors.includes(color);
+                                                return (
+                                                    <option key={index} value={color} disabled={isDisabled}>
+                                                        {color}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                    </div>
+                                )}
+
+                                <button
+                                    className={`w-full py-3 bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white font-semibold focus:outline-none transition-colors duration-200 ${isButtonDisabled ? "bg-gray-400 cursor-not-allowed" : ""
+                                        }`}
+                                    type="submit"
+                                    disabled={isButtonDisabled}
+                                >
+                                    Add to Cart
+                                </button>
+                            </form>
+                        </div>
+                    </motion.div>
                 </div>
             )}
         </div>

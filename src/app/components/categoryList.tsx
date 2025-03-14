@@ -17,6 +17,8 @@ export default function CategoryList({ categories }: CategoryListProps) {
     const pathname = usePathname();
     const { replace } = useRouter();
 
+    const currentCategory = searchParams.get('category');
+
     const handleCategoryClick = (slug: string) => {
         const params = new URLSearchParams(searchParams);
         if (slug) {
@@ -30,10 +32,10 @@ export default function CategoryList({ categories }: CategoryListProps) {
     return (
         <div className="w-full max-w-full overflow-x-auto">
             {/* Buttons for larger screens */}
-            <div className="hidden sm:flex gap-4 overflow-x-auto">
+            <div className="hidden sm:flex overflow-x-auto">
                 <Link
                     href='/order'
-                    className="shrink-0 border border-transparent py-2 text-sm font-medium text-gray-800 hover:text-orange-600 cursor-pointer"
+                    className={`${pathname == '/order' && !searchParams.toString() ? 'bg-zinc-600 text-white' : ''} shrink-0 border border-transparent py-2 px-4 text-sm font-medium text-gray-800 hover:text-white hover:bg-zinc-600 cursor-pointer`}
                 >
                     All
                 </Link>
@@ -41,7 +43,7 @@ export default function CategoryList({ categories }: CategoryListProps) {
                     categories.map((cat, idx) => (
                         <button
                             key={idx} onClick={() => handleCategoryClick(cat.Slug)}
-                            className="shrink-0 border border-transparent py-2 text-sm font-medium text-gray-800 hover:text-orange-600 cursor-pointer"
+                            className={`${currentCategory == `${cat.Slug}` ? 'bg-zinc-600 text-white' : ''} shrink-0 border border-transparent py-2 px-2 text-sm font-medium text-gray-800 hover:text-white hover:bg-zinc-600 cursor-pointer`}
                         >
                             {cat.Name}
                         </button>

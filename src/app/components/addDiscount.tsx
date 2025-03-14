@@ -66,14 +66,14 @@ export default function AddDiscount({ id, discount }: itemProps) {
             {
                 isModalOpen && (
                     <div className="fixed inset-0 flex justify-center items-center bg-black/30 backdrop-blur-md shadow-xl">
-                        <div className="bg-yellow-100 rounded-md p-6 w-1/3">
+                        <div className="bg-white rounded-md p-6 w-1/3">
                             <h2 className="text-center font-medium pb-10">Add discount</h2>
                             <div className="space-y-5 flex flex-col">
                                 <input
                                     onChange={(e) => handleDiscountValue(e)} onKeyDown={handleKeyDown}
                                     defaultValue={discount > 0 ? discount : ""}
                                     type="number" name="discount"
-                                    className="bg-white px-3 py-2 appearance-none" />
+                                    className="bg-white border-1 px-3 py-2 appearance-none" />
                                 <div className="flex flex-col space-y-2 pt-5">
                                     <button onClick={() => updateDiscount(id, off)} className="bg-green-300 hover:bg-green-400 p-3 cursor-pointer">add</button>
                                     <button onClick={() => handleModal()} className="bg-blue-100 hover:bg-blue-200 cursor-pointer p-3">close</button>

@@ -41,7 +41,7 @@ export default async function PaymentPage(props: {
 
 
     return (
-        <div className="w-full flex flex-col space-y-5 mt-5 bg-white">
+        <div className="w-full flex flex-col space-y-2 mt-5 bg-white">
             {/*  */}
 
             <div className="font-medium">
@@ -103,7 +103,7 @@ export default async function PaymentPage(props: {
                         </p>
                     </div>
                     {
-                        discountValue && (
+                        discountValue ? (
                             <div className="flex justify-between w-full">
                                 <p>Total Discount</p>
                                 <p>
@@ -115,7 +115,7 @@ export default async function PaymentPage(props: {
                                     })}
                                 </p>
                             </div>
-                        )
+                        ) : null
                     }
                     <div className="flex justify-between w-full mt-5 text-lg font-medium text-cyan-800">
                         <p>Grand Total</p>

@@ -19,11 +19,11 @@ export default function Search({ placeholder }: { placeholder: string }) {
         replace(`${pathname}?${params.toString()}`);
     }
     return (
-        <div className="w-full flex justify-center">
+        <div className="w-full pt-5">
             <div className="relative sm:w-[100%] md:w-[60%] lg:max-w-[500px]">
                 <input
                     type="text"
-                    className="bg-zinc-100 border-1 text-stone-700 p-2 pl-10 w-full rounded-b-2xl focus:outline-none"
+                    className="bg-white border-1 p-1 pl-10 w-full focus:outline-none"
                     placeholder={placeholder}
                     onChange={(e) => handleSearch(e.target.value)}
                     defaultValue={searchParams.get('product')?.toString()}

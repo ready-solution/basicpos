@@ -5,7 +5,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
     page: {
-        paddingHorizontal: 50,
+        paddingHorizontal: 40,
         paddingVertical: 10,
         fontSize: 10,
         fontFamily: 'Helvetica',
@@ -35,10 +35,10 @@ const styles = StyleSheet.create({
         fontSize: 10,
     },
     totalRow: {
-        display: 'flex',
+        flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 10,
         fontWeight: 'bold',
+        fontSize: 10,
     },
     footer: {
         textAlign: 'center',
@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
     flexBox: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        marginVertical: 4,
     },
     flexItem: {
         width: 140,
@@ -62,6 +63,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
         marginBottom: 5,
         marginTop: 5,
+    },
+    variant: {
+        fontSize: 9,
+        color: 'grey'
     }
 });
 
@@ -87,6 +92,16 @@ type OrderDetail = {
     Discount: number;
     TotalPrice: number;
     Product: Product;
+    Variant: Variant | null;
+};
+
+type Variant = {
+    Id: number;
+    ProductId: number;
+    Size: string | null;
+    Color: string | null;
+    Price: number;
+    Stock: number;
 };
 
 type Order = {
@@ -113,7 +128,7 @@ interface ReceiptProps {
 
 export default function Receipt({ order, storeName, storeAddress, storeContact }: ReceiptProps) {
     const { Id, PaymentType, SubTotal, DiscItemTotal, Total, Status, isPrint, isEmail, createdAt, updatedAt, OrderDetails } = order;
-    
+
 
     return (
         <PDFViewer style={{ width: '100%', height: '100%' }}>
@@ -135,13 +150,37 @@ export default function Receipt({ order, storeName, storeAddress, storeContact }
                     <View style={styles.section}>
                         {order.OrderDetails.map((item, index) => (
                             <View style={styles.flexBox} key={index}>
-                                <View><Text style={styles.itemText}>x{item.Qty} {item.Product.Name}</Text></View>
-                                <View><Text style={styles.itemText}>{item.Price.toLocaleString('id-ID', {
-                                    style: 'currency',
-                                    currency: 'IDR',
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0,
-                                })}</Text></View>
+                                <View>
+                                    <Text style={styles.itemText}>x{item.Qty} {item.Product.Name}</Text>
+                                    {/* Display variant if available */}
+                                    {item.Variant && (
+                                        <Text style={styles.variant}>
+                                            {item.Variant.Size ? `Size: ${item.Variant.Size}` : ''}{item.Variant.Color ? ` | Color: ${item.Variant.Color}` : ''}
+                                        </Text>
+                                    )}
+                                </View>
+
+                                <View>
+                                    <Text style={styles.itemText}>
+                                        {(item.Price * item.Qty).toLocaleString('id-ID', {
+                                            style: 'currency',
+                                            currency: 'IDR',
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
+                                        })}
+                                    </Text>
+                                    {/* Display discount if available */}
+                                    {item.Discount > 0 && (
+                                        <Text style={styles.itemText}>
+                                            - {item.Discount.toLocaleString('id-ID', {
+                                                style: 'currency',
+                                                currency: 'IDR',
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0,
+                                            })}
+                                        </Text>
+                                    )}
+                                </View>
                             </View>
                         ))}
                     </View>
@@ -153,10 +192,13 @@ export default function Receipt({ order, storeName, storeAddress, storeContact }
                         <Text>{SubTotal.toLocaleString()}</Text>
                     </View>
 
-                    <View style={styles.totalRow}>
-                        <Text>Discount:</Text>
-                        <Text>{DiscItemTotal.toLocaleString()}</Text>
-                    </View>
+                    {/* Conditional Discount Row */}
+                    {DiscItemTotal > 0 && (
+                        <View style={styles.totalRow}>
+                            <Text>Discount:</Text>
+                            <Text>- {DiscItemTotal.toLocaleString()}</Text>
+                        </View>
+                    )}
 
                     {/* Total */}
                     <View style={styles.totalRow}>

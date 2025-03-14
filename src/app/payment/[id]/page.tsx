@@ -11,7 +11,8 @@ export default async function TransactionIdPage({ params }: { params: Params }) 
         include: {
             OrderDetails: {
                 include: {
-                    Product: true
+                    Product: true,
+                    Variant: true,
                 }
             }
         }
