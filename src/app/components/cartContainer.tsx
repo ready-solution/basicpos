@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import CartCard from "./cartCard";
+import { FaCartPlus } from "react-icons/fa6";
 
 export default async function CartContainer() {
     const cart = await prisma.cart.findFirst({
@@ -38,8 +39,9 @@ export default async function CartContainer() {
                     ))}
                 </div>
             ) : (
-                <div className="w-full  rounded-md max-h-[60vh] h-full flex justify-center items-center">
-                    <p>add an item</p>
+                <div className="w-full rounded-md max-h-[60vh] h-full flex flex-col justify-center items-center">
+                    <FaCartPlus size={40} color="grey" />
+                    {/* <p className="text-gray-500">add an item</p> */}
                 </div>
             )}
         </div>

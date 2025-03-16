@@ -87,30 +87,52 @@ export default function ExcelUpload() {
 
 
     return (
-        <div className="bg-yellow-100 w-[600px] mx-auto">
-            <input
-                type="file"
-                accept=".xlsx,.xls"
-                onChange={handleFileChange}
-                className="bg-white p-2 border"
-            />
-            <button
-                onClick={handleFileUpload}
-                className="bg-blue-100 hover:bg-blue-200 cursor-pointer mt-2 p-2"
-            >
-                Process File
-            </button>
-            {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
+        <div className="bg-zinc-100 w-full p-5 h-full overflow-x-auto">
+            <div className="flex w-[480px] mx-auto space-x-2">
+                <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={handleFileChange}
+                    className="w-4/5 px-4 py-3 border bg-white border-gray-300 focus:outline-none text-sm"
+                />
+                <div className="flex w-1/5">
+                    {/* Process File Button */}
+                    {jsonData.length === 0 && (
+                        <button
+                            onClick={handleFileUpload}
+                            className="w-full py-3 bg-zinc-600 hover:bg-zinc-800 text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm transition-all"
+                        >
+                            Process
+                        </button>
+                    )}
 
+                    {/* Upload to Database Button */}
+                    {jsonData.length > 0 && (
+                        <button
+                            className="w-full py-3 bg-zinc-600 text-white hover:bg-zinc-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all"
+                            onClick={handleExcelPost}
+                        >
+                            Upload
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Error Message */}
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
+            {/* JSON Preview Section */}
             {jsonData.length > 0 && (
-                <div className="bg-yellow-100 w-[600px] mx-auto mt-5 p-5">
-                    <h3 className="text-lg font-medium">Preview JSON Data</h3>
-                    <pre className="bg-gray-100 p-3 text-xs overflow-auto">
+                <div className="w-[480px] mx-auto mt-4">
+                    <h3 className="text-md font-semibold text-gray-800 mb-2">Preview</h3>
+                    <pre className="bg-zinc-950 text-gray-200 max-h-[80vh] p-4 text-xs overflow-y-auto">
                         {JSON.stringify(jsonData, null, 2)}
                     </pre>
+                    <p className='py-2 text-zinc-500 text-center'>Please check and make sure your data is correct.</p>
                 </div>
             )}
-            <button className="bg-blue-100 hover:bg-blue-200 cursor-pointer mt-2 p-2" onClick={() => handleExcelPost()}>upload to db</button>
+
+
         </div>
     )
 }

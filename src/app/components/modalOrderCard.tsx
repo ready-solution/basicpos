@@ -62,6 +62,8 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
         setSelectedColor(event.target.value);
     };
 
+    console.log(`color = ${selectedColor} ; size = ${selectedSize}`);
+
     const isButtonDisabled = !selectedSize || !selectedColor;
 
     return (
@@ -87,7 +89,7 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
             {isModalOpen && selectedProduct && (
                 <div
                     className="fixed inset-0 flex justify-center items-center bg-black/50 backdrop-blur-xs"
-                    onClick={handleModalClose} // Close the modal when clicking on the background
+                    onClick={handleModalClose}
                 >
                     <motion.div
                         initial={{ opacity: 0.2, y: 500 }}
@@ -96,7 +98,7 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
                     >
                         <div
                             className="bg-white p-6 w-[400px] shadow-lg"
-                            onClick={(e) => e.stopPropagation()} // Prevent event from bubbling up to the background
+                            onClick={(e) => e.stopPropagation()}
                         >
                             <div className="flex flex-col justify-between pb-5 border-b mb-5">
                                 <h1 className="font-medium text-lg">{selectedProduct.Name}</h1>
@@ -143,6 +145,7 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
                                             onChange={handleColorChange}
                                             value={selectedColor ?? ""}
                                         >
+                                            <option value="">Select Color</option>
                                             {uniqueColors.map((color, index) => {
                                                 const isDisabled = !availableColors.includes(color);
                                                 return (

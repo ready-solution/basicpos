@@ -3,7 +3,7 @@ import prisma from "@/lib/db"
 export default async function HistoryPage() {
     const orderlist = await prisma.order.findMany();
     return (
-        <div className="w-full bg-teal-100 p-5">
+        <div className="w-full bg-zinc-100 p-5">
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
                     <thead className="ltr:text-left rtl:text-right">

@@ -54,7 +54,7 @@ export default function CategoryList({ categories }: CategoryListProps) {
             <div className="sm:hidden">
                 <select
                     onChange={(e) => handleCategoryClick(e.target.value)}
-                    className="w-full p-3 text-sm font-medium text-gray-800 border border-gray-300 rounded-lg focus:outline-none"
+                    className="w-full p-2 text-sm font-medium text-gray-800 border border-zinc-800 focus:outline-none"
                 >
                     <option value="">All</option>
                     {
