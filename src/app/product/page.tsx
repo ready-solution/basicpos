@@ -5,8 +5,44 @@ import ExcelUpload from "./components/excelUpload";
 import AddProduct from "../components/addProduct";
 import ProductTable from "../components/productTable";
 
-export default async function ProductPage() {
-    const productList = await prisma.product.findMany();
+export default async function ProductPage(props: {
+    searchParams?: Promise<{
+        product?: string;
+        category?: string;
+    }>;
+}) {
+    const searchParams = await props.searchParams;
+    const productQuery = searchParams?.product || '';
+    // const categoryQuery = searchParams?.category || '';
+    // let categoryId: number | undefined;
+
+    // if (categoryQuery) {
+    //     const categoryList = await prisma.category.findUnique({
+    //         where: {
+    //             Slug: categoryQuery,
+    //         },
+    //     });
+
+    //     if (categoryList) {
+    //         categoryId = categoryList.Id;
+    //     }
+    // }
+
+    const productList = await prisma.product.findMany({
+        where: {
+            AND: [
+                {
+                    Name: {
+                        contains: productQuery,
+                    }
+                }
+            ],
+        },
+    });
+
+    const productVariant = await prisma.productVariant.findMany({});
+
+    // const productList = await prisma.product.findMany();
     const categoryList = await prisma.category.findMany();
 
     const categoryMap = categoryList.reduce((map, category) => {

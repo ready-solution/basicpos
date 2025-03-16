@@ -19,7 +19,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
         replace(`${pathname}?${params.toString()}`);
     }
     return (
-        <div className="w-full pt-5">
+        <div className="w-full">
             <div className="relative sm:w-[100%] md:w-[60%] lg:max-w-[500px]">
                 <input
                     type="text"

@@ -2,7 +2,8 @@
 
 import { TbCheck, TbX } from "react-icons/tb";
 import { useState } from "react";
-import { TiArrowLeft, TiArrowRight  } from "react-icons/ti";
+import { TiArrowLeft, TiArrowRight } from "react-icons/ti";
+import Search from "../order/components/search";
 
 export default function ProductTable({
     productList,
@@ -12,7 +13,6 @@ export default function ProductTable({
     categoryMap: Record<number, string>;
 }) {
     // State for search, sorting, filtering, and pagination
-    const [searchQuery, setSearchQuery] = useState("");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     const [filterCategory, setFilterCategory] = useState<number | "all">("all");
 
@@ -22,9 +22,8 @@ export default function ProductTable({
 
     // Filter products based on search and category
     const filteredProducts = productList.filter((product) => {
-        const matchesSearch = product.Name.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = filterCategory === "all" || product.categoryId === filterCategory;
-        return matchesSearch && matchesCategory;
+        return matchesCategory;
     });
 
     // Sort the filtered products
@@ -64,27 +63,31 @@ export default function ProductTable({
         <div className="w-[50vw] h-[90%] mx-auto mt-5 flex flex-col justify-between">
             {/* Search Bar */}
             <div>
-                <input
+                {/* <input
                     type="text"
                     placeholder="Search products..."
                     className="mb-4 text-sm px-4 mr-3 py-2 border border-gray-300 bg-white w-[480px]"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                />
+                /> */}
+                <div className="flex flex-row">
+                    <Search placeholder="search a product..." />
 
-                {/* Filter by Category */}
-                <select
-                    className="mb-4 px-4 text-sm py-2 border border-gray-300 bg-zinc-600 text-white cursor-pointer hover:bg-zinc-800"
-                    onChange={(e) => setFilterCategory(Number(e.target.value) || "all")}
-                    value={filterCategory}
-                >
-                    <option value="all">All Categories</option>
-                    {Object.keys(categoryMap).map((categoryId) => (
-                        <option key={categoryId} value={categoryId}>
-                            {categoryMap[Number(categoryId)]}
-                        </option>
-                    ))}
-                </select>
+
+                    {/* Filter by Category */}
+                    <select
+                        className="mb-4 px-4 text-sm py-2 border border-gray-300 bg-zinc-600 text-white cursor-pointer hover:bg-zinc-800"
+                        onChange={(e) => setFilterCategory(Number(e.target.value) || "all")}
+                        value={filterCategory}
+                    >
+                        <option value="all">All Categories</option>
+                        {Object.keys(categoryMap).map((categoryId) => (
+                            <option key={categoryId} value={categoryId}>
+                                {categoryMap[Number(categoryId)]}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
                 <div className="">
                     {/* Table */}
