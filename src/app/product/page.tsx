@@ -13,20 +13,6 @@ export default async function ProductPage(props: {
 }) {
     const searchParams = await props.searchParams;
     const productQuery = searchParams?.product || '';
-    // const categoryQuery = searchParams?.category || '';
-    // let categoryId: number | undefined;
-
-    // if (categoryQuery) {
-    //     const categoryList = await prisma.category.findUnique({
-    //         where: {
-    //             Slug: categoryQuery,
-    //         },
-    //     });
-
-    //     if (categoryList) {
-    //         categoryId = categoryList.Id;
-    //     }
-    // }
 
     const productList = await prisma.product.findMany({
         where: {
@@ -38,11 +24,12 @@ export default async function ProductPage(props: {
                 }
             ],
         },
+        include: {
+            Variants: true
+        }
     });
 
-    const productVariant = await prisma.productVariant.findMany({});
-
-    // const productList = await prisma.product.findMany();
+    // const productVariant = await prisma.productVariant.findMany({});
     const categoryList = await prisma.category.findMany();
 
     const categoryMap = categoryList.reduce((map, category) => {
@@ -63,91 +50,6 @@ export default async function ProductPage(props: {
                     Category List
                 </Link>
             </div>
-            {/* <AddProduct categoryList={categoryList} /> */}
-            {/* <div className="flex justify-between gap-10">
-                <ExcelUpload />
-
-                <div className="bg-white w-full shadow-md p-5 space-y-6 max-h-[500px]">
-                    <h2 className="text-md font-semibold text-gray-800">New Product</h2>
-                    <form action={addProduct} className="space-y-3">
-                        <div className="flex justify-between space-x-5">
-                            <div className="w-full">
-                                <label htmlFor="ProductName" className="block text-xs font-medium text-gray-700 mb-2">Product Name</label>
-                                <input
-                                    className="w-full px-4 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                    type="text"
-                                    name="product"
-                                    id="ProductName"
-                                    required
-                                />
-                            </div>
-
-                            <div className="w-full">
-                                <label htmlFor="ProductPrice" className="block text-xs font-medium text-gray-700 mb-2">Product Price (IDR)</label>
-                                <input
-                                    className="w-full px-4 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                    type="number"
-                                    name="price"
-                                    id="ProductPrice"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between space-x-5">
-                            <div className="w-full">
-                                <label htmlFor="ProductStatus" className="block text-xs font-medium text-gray-700 mb-2">Product Status</label>
-                                <select
-                                    name="status"
-                                    id="ProductStatus"
-                                    className="w-full px-4 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                    required
-                                >
-                                    <option value="ready">Ready</option>
-                                    <option value="oos">Out of Stock</option>
-                                </select>
-                            </div>
-
-                            <div className="w-full">
-                                <label htmlFor="ProductEnabled" className="block text-xs font-medium text-gray-700 mb-2">Enabled</label>
-                                <select
-                                    name="enabled"
-                                    id="ProductEnabled"
-                                    className="w-full px-4 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                    required
-                                >
-                                    <option value="true">Enable</option>
-                                    <option value="false">Hide</option>
-                                </select>
-                            </div>
-                        </div>
-
-
-                        <div>
-                            <label htmlFor="ProductCategory" className="block text-xs font-medium text-gray-700 mb-2">Product Category</label>
-                            <select
-                                name="category"
-                                id="ProductCategory"
-                                className="w-full px-4 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                required
-                            >
-                                {categoryList.map((x, y) => (
-                                    <option key={y} value={x.Id}>{x.Name}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full py-2 bg-teal-500 text-white rounded-md shadow-md hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                        >
-                            Add Product
-                        </button>
-                    </form>
-                </div>
-            </div> */}
-
-
 
             {/* Product List Section */}
             <ProductTable productList={productList} categoryMap={categoryMap} />

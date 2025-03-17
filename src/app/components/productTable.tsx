@@ -3,6 +3,7 @@
 import { TbCheck, TbX } from "react-icons/tb";
 import { useState } from "react";
 import { TiArrowLeft, TiArrowRight } from "react-icons/ti";
+import Link from "next/link";
 import Search from "../order/components/search";
 
 export default function ProductTable({
@@ -100,6 +101,7 @@ export default function ProductTable({
                                 </th>
                                 <th className="whitespace-nowrap px-4 py-2 font-medium ">Price</th>
                                 <th className="whitespace-nowrap px-4 py-2 font-medium text-center">Stock</th>
+                                <th className="whitespace-nowrap px-4 py-2 font-medium">Variant</th>
                                 <th
                                     className="whitespace-nowrap px-4 py-2 font-medium  cursor-pointer text-center"
                                     onClick={toggleSortOrder}
@@ -111,7 +113,11 @@ export default function ProductTable({
                         <tbody className="divide-y divide-gray-200">
                             {currentProducts.map((x, y) => (
                                 <tr key={y}>
-                                    <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">{x.Name}</td>
+                                    <td className="whitespace-nowrap px-4 py-2 font-medium">
+                                        <Link href={`/product/${x.Slug}`} className="hover:text-zinc-400 active:text-zinc-800 text-gray-600">
+                                            {x.Name}
+                                        </Link>
+                                    </td>
                                     <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                                         {categoryMap[x.categoryId]}
                                     </td>
@@ -124,6 +130,7 @@ export default function ProductTable({
                                         })}
                                     </td>
                                     <td className="whitespace-nowrap px-4 py-2 text-gray-700 text-center">{x.Stock}</td>
+                                    <td className="whitespace-nowrap px-4 py-2 text-gray-700 text-center">{x.Variants[0]? <TbCheck /> : <TbX />}</td>
                                     <td className="whitespace-nowrap px-4 py-2 text-gray-700 text-center flex justify-center">
                                         {x.Enabled ? <TbCheck /> : <TbX />}
                                     </td>

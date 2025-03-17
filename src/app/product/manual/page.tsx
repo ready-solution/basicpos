@@ -1,13 +1,17 @@
 import { addProduct } from "@/actions/actions";
 import prisma from "@/lib/db";
+import { div } from "framer-motion/client";
+import VariantForm from "./components/variantForm";
 
 
 export default async function ManualUploadPage() {
     const categoryList = await prisma.category.findMany();
+    const productList = await prisma.product.findMany();
+
     return (
-        <div className="w-full bg-zinc-100 flex justify-center">
+        <div className="w-full max-h-[100vh] overflow-x-auto bg-zinc-100 flex flex-col items-center">
             <div className="space-y-4 p-5 w-[480px] mt-10">
-                <h2 className="text-lg font-semibold text-gray-800">Manual Product Input</h2>
+                <h2 className="text-lg font-semibold text-gray-800">Add Product</h2>
                 <form action={addProduct} className="space-y-3">
                     <div className="flex gap-5">
                         <div className="w-full">
@@ -97,6 +101,8 @@ export default async function ManualUploadPage() {
                     </button>
                 </form>
             </div>
+
+            <VariantForm products={productList} />
         </div>
     )
 }
