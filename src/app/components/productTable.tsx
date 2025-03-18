@@ -5,6 +5,7 @@ import { useState } from "react";
 import { TiArrowLeft, TiArrowRight } from "react-icons/ti";
 import Link from "next/link";
 import Search from "../order/components/search";
+import { productEnabled, productStockChange } from "@/actions/actions";
 
 export default function ProductTable({
     productList,
@@ -16,6 +17,10 @@ export default function ProductTable({
     // State for search, sorting, filtering, and pagination
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     const [filterCategory, setFilterCategory] = useState<number | "all">("all");
+
+    const handleProductEnabled = (id: number) => {
+        productEnabled(id)
+    };
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
@@ -101,7 +106,6 @@ export default function ProductTable({
                                 </th>
                                 <th className="whitespace-nowrap px-4 py-2 font-medium ">Price</th>
                                 <th className="whitespace-nowrap px-4 py-2 font-medium text-center">Stock</th>
-                                <th className="whitespace-nowrap px-4 py-2 font-medium">Variant</th>
                                 <th
                                     className="whitespace-nowrap px-4 py-2 font-medium  cursor-pointer text-center"
                                     onClick={toggleSortOrder}
@@ -115,7 +119,7 @@ export default function ProductTable({
                                 <tr key={y}>
                                     <td className="whitespace-nowrap px-4 py-2 font-medium">
                                         <Link href={`/product/${x.Slug}`} className="hover:text-zinc-400 active:text-zinc-800 text-gray-600">
-                                            {x.Name}
+                                            {x.Name} {x.Variants[0] ? '**' : ''}
                                         </Link>
                                     </td>
                                     <td className="whitespace-nowrap px-4 py-2 text-gray-700">
@@ -129,10 +133,18 @@ export default function ProductTable({
                                             maximumFractionDigits: 0
                                         })}
                                     </td>
-                                    <td className="whitespace-nowrap px-4 py-2 text-gray-700 text-center">{x.Stock}</td>
-                                    <td className="whitespace-nowrap px-4 py-2 text-gray-700 text-center">{x.Variants[0]? <TbCheck /> : <TbX />}</td>
+                                    <td className="whitespace-nowrap px-4 py-2 text-gray-700 text-center">
+                                        {x.Stock}
+                                    </td>
                                     <td className="whitespace-nowrap px-4 py-2 text-gray-700 text-center flex justify-center">
-                                        {x.Enabled ? <TbCheck /> : <TbX />}
+                                        <button
+                                            onClick={() => handleProductEnabled(x.Id)}
+                                            className={`relative inline-flex items-center h-5 cursor-pointer rounded-full w-8 ${x.Enabled ? 'bg-zinc-600' : 'bg-gray-300'}`}
+                                        >
+                                            <span
+                                                className={`absolute inline-block w-3 h-3 transform bg-white rounded-full transition-transform ${x.Enabled ? 'translate-x-4' : 'translate-x-1'}`}
+                                            />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}

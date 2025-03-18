@@ -1,7 +1,9 @@
 import { addProduct } from "@/actions/actions";
 import prisma from "@/lib/db";
+import Link from "next/link";
 import { div } from "framer-motion/client";
 import VariantForm from "./components/variantForm";
+import { BiArrowBack } from "react-icons/bi";
 
 
 export default async function ManualUploadPage() {
@@ -10,7 +12,13 @@ export default async function ManualUploadPage() {
 
     return (
         <div className="w-full max-h-[100vh] overflow-x-auto bg-zinc-100 flex flex-col items-center">
-            <div className="space-y-4 p-5 w-[480px] mt-10">
+            <div className="w-full px-5 mt-10">
+                <Link href='/product' className='flex items-center space-x-1 focus:outline-none text-zinc-600 hover:text-zinc-800 hover:font-medium'>
+                    <BiArrowBack className='text-lg' />
+                    <span className='text-sm p-0'>Back</span>
+                </Link>
+            </div>
+            <div className="space-y-4 p-5 w-[480px]">
                 <h2 className="text-lg font-semibold text-gray-800">Add Product</h2>
                 <form action={addProduct} className="space-y-3">
                     <div className="flex gap-5">
@@ -39,15 +47,18 @@ export default async function ManualUploadPage() {
 
                     <div className="flex gap-5">
                         <div className="w-full">
-                            <label htmlFor="ProductStatus" className="block text-xs font-medium text-gray-700 mb-2">Product Status</label>
+                            <label htmlFor="ProductCategory" className="block text-xs font-medium text-gray-700 mb-2">Product Category</label>
                             <select
-                                name="status"
-                                id="ProductStatus"
+                                name="category"
+                                id="ProductCategory"
                                 className="w-full bg-white px-4 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
                                 required
                             >
-                                <option value="ready">Ready</option>
-                                <option value="oos">Out of Stock</option>
+                                {categoryList.map((category) => (
+                                    <option key={category.Id} value={category.Id}>
+                                        {category.Name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -65,32 +76,16 @@ export default async function ManualUploadPage() {
                         </div>
                     </div>
 
-                    <div className="flex gap-5">
-                        <div className="w-full">
-                            <label htmlFor="ProductCategory" className="block text-xs font-medium text-gray-700 mb-2">Product Category</label>
-                            <select
-                                name="category"
-                                id="ProductCategory"
-                                className="w-full bg-white px-4 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                required
-                            >
-                                {categoryList.map((category) => (
-                                    <option key={category.Id} value={category.Id}>
-                                        {category.Name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="w-full">
-                            <label htmlFor="ProductStock" className="block text-xs font-medium text-gray-700 mb-2">Product Stock</label>
-                            <input
-                                className="w-full bg-white px-4 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                type="number"
-                                name="stock"
-                                id="ProductStock"
-                                required
-                            />
-                        </div>
+
+                    <div className="w-full">
+                        <label htmlFor="ProductStock" className="block text-xs font-medium text-gray-700 mb-2">Product Stock</label>
+                        <input
+                            className="w-full bg-white px-4 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                            type="number"
+                            name="stock"
+                            id="ProductStock"
+                            required
+                        />
                     </div>
 
                     <button

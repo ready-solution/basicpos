@@ -40,8 +40,8 @@ export async function addToCart(formData: FormData) {
 
     // Step 3: If the product has variants, find the correct variant by size & color
     if (product.Variants.length > 0) {
-        const selectedVariant = product.Variants.find(v => 
-            (v.Size === size || v.Size === null) && 
+        const selectedVariant = product.Variants.find(v =>
+            (v.Size === size || v.Size === null) &&
             (v.Color === color || v.Color === null)
         );
 
@@ -327,8 +327,9 @@ export async function addProduct(formData: FormData) {
 
     const stock = Number(formData.get("stock")); // Handle stock
     if (isNaN(stock) || stock < 0) throw new Error("Invalid stock value.");
-
-    const enabled = formData.get("enable") === "true"; // Proper boolean conversion
+    console.log(`enable value is ${formData.get("enabled")}`);
+    
+    const enabled = formData.get("enabled") === "true"; // Proper boolean conversion
 
     const categoryId = Number(formData.get("category"));
     const categoryExists = await prisma.category.findUnique({ where: { Id: categoryId } });
@@ -352,6 +353,7 @@ export async function addProduct(formData: FormData) {
 
 export async function excelProduct(products: any[]) {
     const plainProducts = [];
+    console.log("Product JSON data:", JSON.stringify(products, null, 2));  // This will give you better insight into the product data
 
     for (const product of products) {
         let baseSlug = product.name.replace(/\s+/g, "-").toLowerCase(); // Create initial slug
@@ -365,27 +367,104 @@ export async function excelProduct(products: any[]) {
         }
 
         // Validate category
-        const categoryId = Number(product.categoryid);
+        const categoryId = Number(product.categoryId);
         const categoryExists = await prisma.category.findUnique({ where: { Id: categoryId } });
         if (!categoryExists) {
             throw new Error(`Category with ID ${categoryId} does not exist.`);
         }
 
+        // Insert the main product
+        const createdProduct = await prisma.product.create({
+            data: {
+                Name: product.name as string,
+                Slug: slug,
+                Price: Number(product.price) || 0, // Ensures price is valid
+                Stock: Number(product.stock) || 0, // Adds stock handling
+                Enabled: product.enabled === true, // Ensures the 'enabled' is a boolean
+                categoryId: categoryId,
+            }
+        });
+
+        console.log(`Product Created: ${product.name}, Slug: ${slug}`);
+        console.log(`Variants Available: ${JSON.stringify(product.variants, null, 2)}`);
+
+        // Insert variants if they exist
+        if (product.variants && product.variants.length > 0) {
+            const productVariants = product.variants.map((variant: any) => ({
+                ProductId: createdProduct.Id, // Link the variant to the main product
+                Size: variant.size as string,
+                Color: variant.color,
+                Price: variant.vprice || createdProduct.Price, // Use main product price if variant price is not provided
+                Stock: variant.vstock || createdProduct.Stock, // Use main product stock if variant stock is not provided
+            }));
+
+            // Insert variants in bulk
+            await prisma.productVariant.createMany({
+                data: productVariants,
+                skipDuplicates: true, // Skip duplicates
+            });
+
+            console.log(`Inserted ${productVariants.length} variants for ${product.name}`);
+        } else {
+            console.log(`No variants for product: ${product.name}`);
+        }
+
+        // Prepare the product data for the bulk insert
         plainProducts.push({
             Name: product.name as string,
             Slug: slug,
-            Price: Number(product.price) || 0, // Ensures price is valid
-            Stock: Number(product.stock) || 0, // Adds stock handling
-            Enabled: Boolean(product.enabled), // Converts enabled properly
+            Price: Number(product.price) || 0,
+            Stock: Number(product.stock) || 0,
+            Enabled: Boolean(product.enabled),
             categoryId: categoryId,
         });
     }
 
-    // Bulk insert products
+    // Bulk insert products (main products)
     await prisma.product.createMany({
         data: plainProducts,
         skipDuplicates: true, // Prevents duplicate errors
     });
 
     revalidatePath("/product");
+}
+
+export async function productEnabled(id: number) {
+    const product = await prisma.product.findUnique({ where: { Id: id } });
+    if (!product) {
+        throw new Error('Cart item not found');
+    };
+
+    await prisma.product.update({
+        where: {
+            Id: id
+        },
+        data: {
+            Enabled: product.Enabled ? false : true,
+        }
+    });
+
+    revalidatePath('/product');
+};
+
+export async function productStockChange(id: number, stock: number) {
+    await prisma.product.update({
+        where: {
+            Id: id
+        },
+        data: {
+            Stock: stock
+        }
+    })
+}
+
+export async function mainProductPriceChange(id: number, price: number){
+    await prisma.product.update({
+        where: {
+            Id: id
+        },
+        data: {
+            Price: price
+        }
+    })
 }

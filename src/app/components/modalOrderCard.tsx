@@ -70,7 +70,13 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
         <div>
             <div className="text-sm w-full cursor-pointer" onClick={() => handleModalOpen(product)}>
                 <div className="bg-white shadow-zinc-600 shadow-sm hover:bg-slate-300 p-2 flex flex-col items-start border-1">
-                    <p className="font-medium mb-3">{product.Name}</p>
+                <h3
+                                    className="font-medium mb-3 truncate hover:overflow-visible hover:whitespace-normal"
+                                    title={product.Name}
+                                >
+                                    {product.Name.split('').slice(0, 15).join('')}
+                                    {product.Name.split('').length > 15 && '...'}
+                                </h3>
                     <div className="flex justify-between w-full items-end">
                         <p>
                             {product.Price.toLocaleString("id-ID", {

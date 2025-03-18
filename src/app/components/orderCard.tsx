@@ -47,7 +47,14 @@ export default async function ProductCard({ product, variant }: ProductCardProps
                                 <input className="hidden" type="number" name="quantity" value={1} readOnly />
                                 <button className="w-full text-sm bg-white border-1 shadow-zinc-600 shadow-sm hover:bg-slate-300 active:bg-amber-200 cursor-pointer" type="submit">
                                     <div className="p-2 flex flex-col items-start">
-                                        <h3 className="font-medium mb-3">{x.Name}</h3>
+                                        <h3
+                                            className="font-medium mb-3 truncate hover:overflow-visible hover:whitespace-normal"
+                                            title={x.Name}
+                                        >
+                                            {x.Name.split('').slice(0, 15).join('')}
+                                            {x.Name.split('').length > 15 && '...'}
+                                        </h3>
+
                                         <div className="w-full flex justify-between items-end">
                                             <p>{x.Price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
                                             <p className="text-xs">x{x.Stock}</p>
