@@ -206,8 +206,13 @@ export async function payment(formData: FormData) {
 
     // Generate Invoice Code
     const now = new Date();
-    const formattedDate = now.toISOString().replace(/[-:T.]/g, "").slice(0, 14);
-    const invoiceCode: string = `${currCart.Id}-${formattedDate}`;
+    const formattedDate = now.toISOString().replace(/[-:T.]/g, "").slice(0, 8); // YYYYMMDD
+    const timeStamp = now.getMilliseconds(); // Get milliseconds for uniqueness
+
+    // Generate a random 3-letter string
+    const randomString = Math.random().toString(36).substring(2, 5).toUpperCase();
+
+    const invoiceCode: string = `${formattedDate}${timeStamp}${randomString}`;
 
     // Calculate Subtotal & Discount
     const subTotal = currCart.CartItems.reduce((total, item) => {
@@ -328,7 +333,7 @@ export async function addProduct(formData: FormData) {
     const stock = Number(formData.get("stock")); // Handle stock
     if (isNaN(stock) || stock < 0) throw new Error("Invalid stock value.");
     console.log(`enable value is ${formData.get("enabled")}`);
-    
+
     const enabled = formData.get("enabled") === "true"; // Proper boolean conversion
 
     const categoryId = Number(formData.get("category"));
@@ -385,9 +390,6 @@ export async function excelProduct(products: any[]) {
             }
         });
 
-        console.log(`Product Created: ${product.name}, Slug: ${slug}`);
-        console.log(`Variants Available: ${JSON.stringify(product.variants, null, 2)}`);
-
         // Insert variants if they exist
         if (product.variants && product.variants.length > 0) {
             const productVariants = product.variants.map((variant: any) => ({
@@ -404,9 +406,6 @@ export async function excelProduct(products: any[]) {
                 skipDuplicates: true, // Skip duplicates
             });
 
-            console.log(`Inserted ${productVariants.length} variants for ${product.name}`);
-        } else {
-            console.log(`No variants for product: ${product.name}`);
         }
 
         // Prepare the product data for the bulk insert
@@ -458,7 +457,7 @@ export async function productStockChange(id: number, stock: number) {
     })
 }
 
-export async function mainProductPriceChange(id: number, price: number){
+export async function mainProductPriceChange(id: number, price: number) {
     await prisma.product.update({
         where: {
             Id: id

@@ -12,6 +12,7 @@ const styles = StyleSheet.create({
     },
     section: {
         marginBottom: 10,
+        marginTop: 10
         // minHeight: 400,
     },
     title: {
@@ -22,7 +23,7 @@ const styles = StyleSheet.create({
     },
     storeInfo: {
         textAlign: 'center',
-        marginBottom: 20,
+        marginBottom: 5,
         marginTop: 20,
         paddingHorizontal: 30
     },
@@ -67,6 +68,11 @@ const styles = StyleSheet.create({
     variant: {
         fontSize: 9,
         color: 'grey'
+    },
+    invoiceNo: {
+        textAlign: 'center',
+        fontWeight: 'bold',
+        marginVertical: 3
     }
 });
 
@@ -127,7 +133,7 @@ interface ReceiptProps {
 }
 
 export default function Receipt({ order, storeName, storeAddress, storeContact }: ReceiptProps) {
-    const { Id, PaymentType, SubTotal, DiscItemTotal, Total, Status, isPrint, isEmail, createdAt, updatedAt, OrderDetails } = order;
+    const { Id, InvoiceNo, SubTotal, DiscItemTotal, Total, Status, isPrint, isEmail, createdAt, updatedAt, OrderDetails } = order;
 
 
     return (
@@ -142,10 +148,14 @@ export default function Receipt({ order, storeName, storeAddress, storeContact }
                         <Text style={styles.smallText}>{storeAddress}</Text>
                         <Text style={styles.smallText}>{storeContact}</Text>
                     </View>
+                    <View style={styles.line}></View>
+                    <View style={styles.invoiceNo}>
+                        <Text>
+                            {InvoiceNo}
+                        </Text>
+                    </View>
 
                     <View style={styles.line}></View>
-
-
                     {/* Purchased Items */}
                     <View style={styles.section}>
                         {order.OrderDetails.map((item, index) => (
@@ -208,7 +218,7 @@ export default function Receipt({ order, storeName, storeAddress, storeContact }
 
                     {/* Footer */}
                     <Text style={styles.footer}>
-                        Thank you for shopping with us! Visit again soon.
+                        Thanks for choosing us! We can't wait to see you again. Happy shopping!
                     </Text>
                 </Page>
             </Document>

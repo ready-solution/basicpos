@@ -1,11 +1,9 @@
-"use client";
+"use client"
 
-import { TbCheck, TbX } from "react-icons/tb";
 import { useState } from "react";
-import { TiArrowLeft, TiArrowRight } from "react-icons/ti";
 import Link from "next/link";
+import { TiArrowLeft, TiArrowRight } from "react-icons/ti";
 import Search from "../order/components/search";
-import { productEnabled, productStockChange } from "@/actions/actions";
 
 export default function ProductTable({
     productList,
@@ -17,9 +15,11 @@ export default function ProductTable({
     // State for search, sorting, filtering, and pagination
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     const [filterCategory, setFilterCategory] = useState<number | "all">("all");
+    const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set()); // To keep track of selected rows
+    const [selectAll, setSelectAll] = useState(false); // To handle "Select All" checkbox
 
     const handleProductEnabled = (id: number) => {
-        productEnabled(id)
+        // Handle enabling/disabling product
     };
 
     // Pagination states
@@ -42,6 +42,30 @@ export default function ProductTable({
     const indexOfLastProduct = currentPage * itemsPerPage;
     const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
     const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+
+    // Handle selecting/deselecting a row
+    const handleRowSelection = (id: number) => {
+        const newSelectedRows = new Set(selectedRows);
+        if (newSelectedRows.has(id)) {
+            newSelectedRows.delete(id);
+        } else {
+            newSelectedRows.add(id);
+        }
+        setSelectedRows(newSelectedRows);
+        setSelectAll(newSelectedRows.size === currentProducts.length);
+    };
+
+    // Handle "Select All" checkbox
+    const handleSelectAll = () => {
+        const newSelectedRows = new Set<number>();
+        if (!selectAll) {
+            currentProducts.forEach(product => {
+                newSelectedRows.add(product.Id);
+            });
+        }
+        setSelectedRows(newSelectedRows);
+        setSelectAll(!selectAll);
+    };
 
     // Toggle sorting order
     const toggleSortOrder = () => {
@@ -66,48 +90,43 @@ export default function ProductTable({
     };
 
     return (
-        <div className="w-[50vw] h-[90%] mx-auto mt-5 flex flex-col justify-between">
+        <div className="w-[50vw] h-[90%] mx-auto mt-5 flex flex-col">
             {/* Search Bar */}
-            <div>
-                {/* <input
-                    type="text"
-                    placeholder="Search products..."
-                    className="mb-4 text-sm px-4 mr-3 py-2 border border-gray-300 bg-white w-[480px]"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                /> */}
-                <div className="flex flex-row">
-                    <Search placeholder="search a product..." />
-
-
-                    {/* Filter by Category */}
-                    <select
-                        className="mb-4 px-4 text-sm py-2 border border-gray-300 bg-zinc-600 text-white cursor-pointer hover:bg-zinc-800"
-                        onChange={(e) => setFilterCategory(Number(e.target.value) || "all")}
-                        value={filterCategory}
-                    >
-                        <option value="all">All Categories</option>
-                        {Object.keys(categoryMap).map((categoryId) => (
-                            <option key={categoryId} value={categoryId}>
-                                {categoryMap[Number(categoryId)]}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div className="">
+            <div className="flex flex-row mb-4">
+                <Search placeholder="search a product..." />
+                {/* Filter by Category */}
+                <select
+                    className="mb-4 px-4 text-sm py-2 border border-gray-300 bg-zinc-600 text-white cursor-pointer hover:bg-zinc-800"
+                    onChange={(e) => setFilterCategory(Number(e.target.value) || "all")}
+                    value={filterCategory}
+                >
+                    <option value="all">All Categories</option>
+                    {Object.keys(categoryMap).map((categoryId) => (
+                        <option key={categoryId} value={categoryId}>
+                            {categoryMap[Number(categoryId)]}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            <div className="h-[500px] flex flex-col justify-between">
+                <div>
                     {/* Table */}
                     <table className="w-full divide-y-2 divide-gray-200 bg-white text-sm">
                         <thead className="ltr:text-left rtl:text-right bg-zinc-200">
                             <tr>
-                                <th className="whitespace-nowrap px-4 py-2 font-medium ">Name</th>
-                                <th className="whitespace-nowrap px-4 py-2 font-medium ">
-                                    Category
+                                <th className="whitespace-nowrap px-4 py-2 font-medium text-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectAll}
+                                        onChange={handleSelectAll}
+                                    />
                                 </th>
-                                <th className="whitespace-nowrap px-4 py-2 font-medium ">Price</th>
+                                <th className="whitespace-nowrap px-4 py-2 font-medium">Name</th>
+                                <th className="whitespace-nowrap px-4 py-2 font-medium">Category</th>
+                                <th className="whitespace-nowrap px-4 py-2 font-medium">Price</th>
                                 <th className="whitespace-nowrap px-4 py-2 font-medium text-center">Stock</th>
                                 <th
-                                    className="whitespace-nowrap px-4 py-2 font-medium  cursor-pointer text-center"
+                                    className="whitespace-nowrap px-4 py-2 font-medium cursor-pointer text-center"
                                     onClick={toggleSortOrder}
                                 >
                                     Enabled {sortOrder === "asc" ? "↑" : "↓"}
@@ -115,8 +134,15 @@ export default function ProductTable({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {currentProducts.map((x, y) => (
-                                <tr key={y}>
+                            {currentProducts.map((x) => (
+                                <tr key={x.Id}>
+                                    <td className="whitespace-nowrap px-4 py-2 text-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedRows.has(x.Id)}
+                                            onChange={() => handleRowSelection(x.Id)}
+                                        />
+                                    </td>
                                     <td className="whitespace-nowrap px-4 py-2 font-medium">
                                         <Link href={`/product/${x.Slug}`} className="hover:text-zinc-400 active:text-zinc-800 text-gray-600">
                                             {x.Name} {x.Variants[0] ? '**' : ''}
@@ -151,36 +177,35 @@ export default function ProductTable({
                         </tbody>
                     </table>
                 </div>
-            </div>
 
-
-            {/* Pagination Controls */}
-            <div className="flex justify-between items-center mt-4">
-                <button
-                    className="p-1 bg-gray-300 rounded-full hover:bg-zinc-800 hover:text-white cursor-pointer"
-                    onClick={goToPreviousPage}
-                    disabled={currentPage === 1}
-                >
-                    <TiArrowLeft size={30} />
-                </button>
-                <div className="flex space-x-2">
-                    {Array.from({ length: Math.ceil(sortedProducts.length / itemsPerPage) }, (_, i) => (
-                        <button
-                            key={i}
-                            className={`px-3 py-2 rounded-full text-xs ${currentPage === i + 1 ? "bg-zinc-600 hover:bg-zinc-800 text-white" : "bg-gray-200"}`}
-                            onClick={() => handlePageChange(i + 1)}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
+                {/* Pagination Controls */}
+                <div className="flex justify-between items-center mt-4">
+                    <button
+                        className="p-1 bg-gray-300 rounded-full hover:bg-zinc-800 hover:text-white cursor-pointer"
+                        onClick={goToPreviousPage}
+                        disabled={currentPage === 1}
+                    >
+                        <TiArrowLeft size={30} />
+                    </button>
+                    <div className="flex space-x-2">
+                        {Array.from({ length: Math.ceil(sortedProducts.length / itemsPerPage) }, (_, i) => (
+                            <button
+                                key={i}
+                                className={`px-3 py-2 rounded-full text-xs ${currentPage === i + 1 ? "bg-zinc-600 hover:bg-zinc-800 text-white" : "bg-gray-200"}`}
+                                onClick={() => handlePageChange(i + 1)}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        className="p-1 bg-gray-300 rounded-full hover:bg-zinc-800 hover:text-white cursor-pointer"
+                        onClick={goToNextPage}
+                        disabled={currentPage === Math.ceil(sortedProducts.length / itemsPerPage)}
+                    >
+                        <TiArrowRight size={30} />
+                    </button>
                 </div>
-                <button
-                    className="p-1 bg-gray-300 rounded-full hover:bg-zinc-800 hover:text-white cursor-pointer"
-                    onClick={goToNextPage}
-                    disabled={currentPage === Math.ceil(sortedProducts.length / itemsPerPage)}
-                >
-                    <TiArrowRight size={30} />
-                </button>
             </div>
         </div>
     );
