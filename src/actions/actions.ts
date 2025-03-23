@@ -349,6 +349,7 @@ export async function addProduct(formData: FormData) {
             Stock: stock, // Now included
             Enabled: enabled,
             categoryId: categoryId,
+            Available: true,
         }
     });
 
@@ -387,6 +388,7 @@ export async function excelProduct(products: any[]) {
                 Stock: Number(product.stock) || 0, // Adds stock handling
                 Enabled: product.enabled === true, // Ensures the 'enabled' is a boolean
                 categoryId: categoryId,
+                Available: true,
             }
         });
 
@@ -416,6 +418,7 @@ export async function excelProduct(products: any[]) {
             Stock: Number(product.stock) || 0,
             Enabled: Boolean(product.enabled),
             categoryId: categoryId,
+            Available: true,
         });
     }
 
@@ -466,4 +469,24 @@ export async function mainProductPriceChange(id: number, price: number) {
             Price: price
         }
     })
+}
+
+export async function addCategory(formData: FormData) {
+    const categoryName = formData.get("category") as string;
+    if (!categoryName) throw new Error("Category name is required.");
+    const existingCategory = await prisma.category.findFirst({
+        where: {
+            Name: categoryName,
+        },
+    });
+    if (existingCategory) {
+        throw new Error("Category name already exists.");
+    };
+    await prisma.category.create({
+        data: {
+            Name: categoryName,
+            Slug: categoryName.replace(/\s+/g, "-").toLowerCase()
+        },
+    });
+    revalidatePath("/product/categories");
 }
