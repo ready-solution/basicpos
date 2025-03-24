@@ -20,7 +20,8 @@ export default async function ProductPage(props: {
                 {
                     Name: {
                         contains: productQuery,
-                    }
+                    },
+                    Available: true,
                 }
             ],
         },

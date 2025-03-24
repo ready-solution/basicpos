@@ -490,3 +490,38 @@ export async function addCategory(formData: FormData) {
     });
     revalidatePath("/product/categories");
 }
+
+export async function deleteProduct(ids: number[]) {
+    // Step 1: Validate input (ids should be an array of numbers)
+    if (!Array.isArray(ids) || ids.length === 0) {
+        throw new Error('Invalid product IDs');
+    }
+
+    try {
+        // Step 2: Delete the products from the database by marking available as false
+        const deletedProducts = await prisma.product.updateMany({
+            where: {
+                Id: {
+                    in: ids,
+                },
+            },
+            data: {
+                Available: false,
+            }
+        });
+
+        // Step 3: Check if any products were deleted
+        if (deletedProducts.count === 0) {
+            throw new Error('No products found to delete');
+        }
+
+        // Step 4: Return success message
+        revalidatePath("/product");
+        return { success: true, message: `${deletedProducts.count} product(s) deleted successfully.` };
+    } catch (error) {
+        // Step 5: Handle errors
+        console.error('Error deleting products:', error);
+        throw new Error('Failed to delete products');
+    }
+    
+}

@@ -32,6 +32,7 @@ export default async function OrderPage(props: {
                         contains: productQuery,
                     },
                     Enabled: true,
+                    Available: true,
                 },
                 ...(categoryId ? [{ categoryId: categoryId }] : []),
             ],
