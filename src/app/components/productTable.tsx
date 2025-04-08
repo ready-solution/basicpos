@@ -198,7 +198,7 @@ export default function ProductTable({
                                     </td>
                                     <td className="whitespace-nowrap px-4 py-2 text-center">
                                         <button
-                                            onClick={() => handleDeleteProduct(x.Id)}
+                                            onClick={() => handleDeleteProducts()}
                                             className="text-red-600 hover:text-red-800 text-xs cursor-pointer"
                                         >
                                             Delete
