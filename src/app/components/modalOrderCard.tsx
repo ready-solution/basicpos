@@ -62,21 +62,19 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
         setSelectedColor(event.target.value);
     };
 
-    console.log(`color = ${selectedColor} ; size = ${selectedSize}`);
-
     const isButtonDisabled = !selectedSize || !selectedColor;
 
     return (
         <div>
             <div className="text-sm w-full cursor-pointer" onClick={() => handleModalOpen(product)}>
                 <div className="bg-white shadow-zinc-600 shadow-sm hover:bg-slate-300 p-2 flex flex-col items-start border-1">
-                <h3
-                                    className="font-medium mb-3 truncate hover:overflow-visible hover:whitespace-normal"
-                                    title={product.Name}
-                                >
-                                    {product.Name.split('').slice(0, 15).join('')}
-                                    {product.Name.split('').length > 15 && '...'}
-                                </h3>
+                    <h3
+                        className="font-medium mb-3 truncate hover:overflow-visible hover:whitespace-normal"
+                        title={product.Name}
+                    >
+                        {product.Name.split('').slice(0, 15).join('')}
+                        {product.Name.split('').length > 15 && '...'}
+                    </h3>
                     <div className="flex justify-between w-full items-end">
                         <p>
                             {product.Price.toLocaleString("id-ID", {
@@ -112,51 +110,34 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
                                     {selectedProduct.Price.toLocaleString("id-ID", {
                                         style: "currency",
                                         currency: "IDR",
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0,
                                     })}
                                 </p>
                             </div>
 
                             {/* Add to Cart Form */}
-                            <form action={addToCart} className="flex flex-col gap-3 text-sm pb-5">
+                            <form action={addToCart} className="flex flex-col gap-4 text-sm pb-5">
                                 <input type="hidden" name="productId" value={selectedProduct.Id} readOnly />
                                 <input type="hidden" name="quantity" value={1} readOnly />
 
                                 {/* Size Selection */}
                                 {uniqueSizes.length > 0 && (
                                     <div>
-                                        <label className="block font-semibold text-gray-700 mb-2">Size:</label>
+                                        <label className="block font-medium text-gray-800 mb-1">Size:</label>
                                         <select
                                             name="size"
-                                            className="w-full p-3 bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 cursor-pointer"
+                                            className="w-full p-3 bg-white border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-zinc-600 text-sm"
                                             onChange={handleSizeChange}
                                             value={selectedSize ?? ""}
                                         >
                                             <option value="">Select Size</option>
-                                            {uniqueSizes.map((size, index) => (
-                                                <option key={index} value={size}>
-                                                    {size}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
-
-                                {/* Color Selection */}
-                                {uniqueColors.length > 0 && (
-                                    <div>
-                                        <label className="block font-semibold text-gray-700 mb-2">Color:</label>
-                                        <select
-                                            name="color"
-                                            className="w-full p-3 bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 cursor-pointer"
-                                            onChange={handleColorChange}
-                                            value={selectedColor ?? ""}
-                                        >
-                                            <option value="">Select Color</option>
-                                            {uniqueColors.map((color, index) => {
-                                                const isDisabled = !availableColors.includes(color);
+                                            {uniqueSizes.map((size, index) => {
+                                                const matchingVariants = variant.filter(v => v.Size === size);
+                                                const totalStock = matchingVariants.reduce((sum, v) => sum + (v.Stock || 0), 0);
                                                 return (
-                                                    <option key={index} value={color} disabled={isDisabled}>
-                                                        {color}
+                                                    <option key={index} value={size} disabled={totalStock === 0}>
+                                                        {size}
                                                     </option>
                                                 );
                                             })}
@@ -164,8 +145,37 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
                                     </div>
                                 )}
 
+                                {/* Color Selection */}
+                                {uniqueColors.length > 0 && (
+                                    <div>
+                                        <label className="block font-medium text-gray-800 mb-1">Color:</label>
+                                        <select
+                                            name="color"
+                                            className="w-full p-3 bg-white border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-zinc-600 text-sm"
+                                            onChange={handleColorChange}
+                                            value={selectedColor ?? ""}
+                                        >
+                                            <option value="">Select Color</option>
+                                            {uniqueColors.map((color, index) => {
+                                                const matchingVariant = variant.find(v => v.Color === color && v.Size === selectedSize);
+                                                const stock = matchingVariant?.Stock ?? 0;
+                                                const isDisabled = !availableColors.includes(color) || stock <= 0;
+                                                return (
+                                                    <option key={index} value={color} disabled={isDisabled}>
+                                                        {color} {stock > 0 ? `(${stock} left)` : "(Out of stock)"}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                    </div>
+                                )}
+
+                                {/* Submit Button */}
                                 <button
-                                    className={`w-full py-3 bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white font-semibold focus:outline-none transition-colors duration-200 ${isButtonDisabled ? "bg-gray-400 cursor-not-allowed" : ""
+                                    className={`w-full py-3 rounded text-white font-semibold text-sm transition-colors duration-200
+                                            ${isButtonDisabled
+                                            ? "bg-gray-300 cursor-not-allowed"
+                                            : "bg-zinc-800 hover:bg-zinc-900 active:bg-black"
                                         }`}
                                     type="submit"
                                     disabled={isButtonDisabled}

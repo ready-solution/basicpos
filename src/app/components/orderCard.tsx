@@ -57,7 +57,8 @@ export default async function ProductCard({ product, variant }: ProductCardProps
 
                                         <div className="w-full flex justify-between items-end">
                                             <p>{x.Price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
-                                            <p className="text-xs">x{x.Stock}</p>
+                                            {/* <p className="text-xs">x{x.Stock}</p> */}
+                                            <p className={`text-xs ${x.Stock < 5 ? "text-orange-500" : "text-gray-500"} mt-1`}>Stock: {x.Stock}</p>
                                         </div>
                                     </div>
                                 </button>

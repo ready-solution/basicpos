@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { TiArrowLeft, TiArrowRight } from "react-icons/ti";
 import Search from "../order/components/search";
+import { productEnabled, deleteProduct } from "@/actions/actions";
 
 export default function ProductTable({
     productList,
@@ -20,7 +21,13 @@ export default function ProductTable({
 
     const handleProductEnabled = (id: number) => {
         // Handle enabling/disabling product
+        productEnabled(id)
     };
+
+    const handleDeleteProduct = async (id: number) => {
+        deleteProduct(id)
+    };
+    
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
@@ -131,6 +138,7 @@ export default function ProductTable({
                                 >
                                     Enabled {sortOrder === "asc" ? "↑" : "↓"}
                                 </th>
+                                <th className="whitespace-nowrap px-4 py-2 font-medium text-center">Delete</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -170,6 +178,14 @@ export default function ProductTable({
                                             <span
                                                 className={`absolute inline-block w-3 h-3 transform bg-white rounded-full transition-transform ${x.Enabled ? 'translate-x-4' : 'translate-x-1'}`}
                                             />
+                                        </button>
+                                    </td>
+                                    <td className="whitespace-nowrap px-4 py-2 text-center">
+                                        <button
+                                            onClick={() => handleDeleteProduct(x.Id)}
+                                            className="text-red-600 hover:text-red-800 text-xs cursor-pointer"
+                                        >
+                                            Delete
                                         </button>
                                     </td>
                                 </tr>

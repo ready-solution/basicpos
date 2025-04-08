@@ -104,15 +104,15 @@ export default function ExcelUpload() {
         vprice: number;
         vstock: number;
     }
-    
+
     const handleExcelPost = () => {
         try {
             const groupedData: Record<string, any> = {}; // To store the grouped products
-    
+
             // Group products and variants
             jsonData.forEach(item => {
                 const productName = item.name;
-    
+
                 // If the product doesn't exist in the groupedData, initialize it
                 if (!groupedData[productName]) {
                     groupedData[productName] = {
@@ -124,7 +124,7 @@ export default function ExcelUpload() {
                         variants: [] // Initialize variants as an empty array
                     };
                 }
-    
+
                 // Loop through the variants if they exist in the item
                 if (item.variants && item.variants.length > 0) {
                     item.variants.forEach((variant: Variant) => {
@@ -137,27 +137,27 @@ export default function ExcelUpload() {
                         });
                     });
                 }
-    
+
                 // Debug log to check the current product and its variants
                 console.log(`Processed item: ${productName}`, groupedData[productName]);
             });
-    
+
             // Flatten the grouped data into an array
             const plainJsonData = Object.values(groupedData); // Convert groupedData object into an array
-    
+
             // Debug log to see the final structure of the grouped data
             console.log("Final grouped data:", JSON.stringify(plainJsonData, null, 2));
-    
+
             // Pass the formatted data to the action function
             excelProduct(plainJsonData);
-    
+
             setFile(null);
             setJsonData([]);
         } catch (err) {
             setError("Error uploading to db");
             console.error(err);
         }
-    };    
+    };
 
     return (
         <div className="bg-zinc-100 w-full p-5 h-full overflow-x-auto">
@@ -211,6 +211,66 @@ export default function ExcelUpload() {
                     <p className='py-2 text-zinc-500 text-center'>Please check and make sure your data is correct.</p>
                 </div>
             )}
+
+            <div className="w-[580px] mx-auto mt-8">
+                <h3 className="text-md font-semibold text-gray-800 mb-2">Excel Format Example</h3>
+                <div className="overflow-x-auto">
+                    <table className="table-auto text-xs text-left w-full border border-gray-300 bg-white">
+                        <thead className="bg-zinc-200 text-gray-700">
+                            <tr>
+                                <th className="border px-2 py-1">name</th>
+                                <th className="border px-2 py-1">price</th>
+                                <th className="border px-2 py-1">stock</th>
+                                <th className="border px-2 py-1">enabled</th>
+                                <th className="border px-2 py-1">categoryId</th>
+                                <th className="border px-2 py-1">size</th>
+                                <th className="border px-2 py-1">color</th>
+                                <th className="border px-2 py-1">vprice</th>
+                                <th className="border px-2 py-1">vstock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td className="border px-2 py-1">Basic Shirt</td>
+                                <td className="border px-2 py-1">0</td>
+                                <td className="border px-2 py-1">0</td>
+                                <td className="border px-2 py-1">yes</td>
+                                <td className="border px-2 py-1">1</td>
+                                <td className="border px-2 py-1">S</td>
+                                <td className="border px-2 py-1">White</td>
+                                <td className="border px-2 py-1">200000</td>
+                                <td className="border px-2 py-1">25</td>
+                            </tr>
+                            <tr>
+                                <td className="border px-2 py-1">Basic Jeans</td>
+                                <td className="border px-2 py-1">150000</td>
+                                <td className="border px-2 py-1">0</td>
+                                <td className="border px-2 py-1">yes</td>
+                                <td className="border px-2 py-1">2</td>
+                                <td className="border px-2 py-1">M</td>
+                                <td className="border px-2 py-1">Blue</td>
+                                <td className="border px-2 py-1">150000</td>
+                                <td className="border px-2 py-1">30</td>
+                            </tr>
+                            <tr>
+                                <td className="border px-2 py-1">Basic Shoe</td>
+                                <td className="border px-2 py-1">600000</td>
+                                <td className="border px-2 py-1">35</td>
+                                <td className="border px-2 py-1">yes</td>
+                                <td className="border px-2 py-1">3</td>
+                                <td className="border px-2 py-1">L</td>
+                                <td className="border px-2 py-1">Blue</td>
+                                <td className="border px-2 py-1">600000</td>
+                                <td className="border px-2 py-1">30</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                    *If product has variants, price/stock will be taken from <strong>vprice</strong> and <strong>vstock</strong>. If not provided, it will fallback to main product price/stock.
+                </p>
+            </div>
+
         </div>
     )
 }

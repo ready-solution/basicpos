@@ -40,11 +40,11 @@ export default function CartCard({ id, name, price, qty, discount, size, color }
 
                         {/* Display Variant Info if Available */}
                         {(size || color) ? (
-                            <p className="text-sm text-gray-600">
+                            <p className="text-xs p-1 text-gray-600">
                                 - {size && `Size: ${size}`} {color && ` | Color: ${color}`}
                             </p>
                         ) : (
-                            <p className="text-sm text-gray-600">
+                            <p className="text-xs p-1 text-gray-600">
                                 -
                             </p>
                         )}
@@ -102,21 +102,23 @@ export default function CartCard({ id, name, price, qty, discount, size, color }
 
                     {/* Quantity Input & Remove Button */}
                     <div className="flex w-2/6 justify-between items-center">
-                        <AddDiscount id={id} discount={discount} />
+                        <div className="flex items-center">
+                            <AddDiscount id={id} discount={discount} />
 
-                        <input
-                            type="number" min={1}
-                            onChange={(e) => handleCartQty(e, id)}
-                            value={qty}
-                            className="w-10 p-2 border-1 focus:outline-none"
-                            style={{
-                                WebkitAppearance: "none",
-                                MozAppearance: "textfield",
-                                appearance: "textfield"
-                            }}
-                        />
+                            <input
+                                type="number" min={1}
+                                onChange={(e) => handleCartQty(e, id)}
+                                value={qty}
+                                className="w-8 p-2 border-1 focus:outline-none"
+                                style={{
+                                    WebkitAppearance: "none",
+                                    MozAppearance: "textfield",
+                                    appearance: "textfield"
+                                }}
+                            />
+                        </div>
 
-                        <button className=" p-2 rounded-full hover:text-red-600 cursor-pointer" onClick={() => handleRemoveItem(id)}>
+                        <button className="p-2 rounded-full hover:text-red-600 cursor-pointer" onClick={() => handleRemoveItem(id)}>
                             <FaTrash />
                         </button>
                     </div>

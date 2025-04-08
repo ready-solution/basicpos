@@ -349,6 +349,7 @@ export async function addProduct(formData: FormData) {
             Stock: stock, // Now included
             Enabled: enabled,
             categoryId: categoryId,
+            Available: true
         }
     });
 
@@ -387,6 +388,7 @@ export async function excelProduct(products: any[]) {
                 Stock: Number(product.stock) || 0, // Adds stock handling
                 Enabled: product.enabled === true, // Ensures the 'enabled' is a boolean
                 categoryId: categoryId,
+                Available: true
             }
         });
 
@@ -416,6 +418,7 @@ export async function excelProduct(products: any[]) {
             Stock: Number(product.stock) || 0,
             Enabled: Boolean(product.enabled),
             categoryId: categoryId,
+            Available: true
         });
     }
 
@@ -466,4 +469,46 @@ export async function mainProductPriceChange(id: number, price: number) {
             Price: price
         }
     })
+}
+
+export async function addCategory(formData: FormData) {
+    const categoryName = formData.get("category") as string;
+    if (!categoryName) throw new Error("Category name is required.");
+
+    const baseSlug = categoryName.toLowerCase().replace(/\s+/g, "-");
+    let slug = baseSlug;
+    let counter = 1;
+
+    const existingCategories = await prisma.category.findMany({
+        select: { Slug: true },
+    });
+
+    const existingSlugs = new Set(existingCategories.map(c => c.Slug));
+
+    while (existingSlugs.has(slug)) {
+        slug = `${baseSlug}-${counter++}`;
+    }
+
+    await prisma.category.create({
+        data: {
+            Name: categoryName,
+            Slug: slug as string,
+        },
+    });
+    revalidatePath('/categories')
+}
+
+export async function deleteProduct(id: number) {
+    const product = await prisma.product.findUnique({ where: { Id: id } });
+    if (product) {
+        await prisma.product.update({
+            where: {
+                Id: id
+            },
+            data: {
+                Available: false,
+            }
+        });
+    };
+    revalidatePath('/product');
 }

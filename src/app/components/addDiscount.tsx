@@ -12,7 +12,7 @@ interface itemProps {
 
 export default function AddDiscount({ id, discount }: itemProps) {
     const [isModalOpen, setIsModalOpen] = useState(false); // State to track modal visibility
-    const [off, setOff] = useState("");
+    const [off, setOff] = useState(0);
 
     const handleModal = () => {
         if (isModalOpen == true) {
@@ -23,7 +23,13 @@ export default function AddDiscount({ id, discount }: itemProps) {
     };
 
     const handleDiscountValue = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setOff(e.target.value);
+        let value = e.target.value.replace(/[^\d]/g, "");
+        if (value === "") {
+            setOff(0);
+        } else {
+            // Set the pay value as a number without any formatting
+            setOff(Number(value));
+        }
     };
 
     const updateDiscount = (id: number, amount: string) => {
@@ -33,8 +39,20 @@ export default function AddDiscount({ id, discount }: itemProps) {
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
-            updateDiscount(id, off);
+            updateDiscount(id, off !== null ? off.toString() : "0");
         }
+    };
+
+    const handleModalClose = () => {
+        setIsModalOpen(false);
+    };
+    
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            maximumFractionDigits: 0, // No decimals
+        }).format(amount);
     };
 
     useEffect(() => {
@@ -65,8 +83,8 @@ export default function AddDiscount({ id, discount }: itemProps) {
             {/* MODAL */}
             {
                 isModalOpen && (
-                    <div className="fixed inset-0 flex justify-center items-center bg-black/30 backdrop-blur-md shadow-xl">
-                        <div className="bg-white rounded-md p-6 w-1/3">
+                    <div className="fixed inset-0 flex justify-center items-center bg-black/50 backdrop-blur-xs" onClick={handleModalClose}>
+                        <div className="bg-white rounded-md p-6 w-1/3" onClick={(e) => e.stopPropagation()}>
                             <h2 className="text-center font-medium pb-10">Add discount</h2>
                             <div className="space-y-5 flex flex-col">
                                 <input
@@ -75,8 +93,7 @@ export default function AddDiscount({ id, discount }: itemProps) {
                                     type="number" name="discount"
                                     className="bg-white border-1 px-3 py-2 appearance-none" />
                                 <div className="flex flex-col space-y-2 pt-5">
-                                    <button onClick={() => updateDiscount(id, off)} className="bg-green-300 hover:bg-green-400 p-3 cursor-pointer">add</button>
-                                    <button onClick={() => handleModal()} className="bg-blue-100 hover:bg-blue-200 cursor-pointer p-3">close</button>
+                                    <button onClick={() => updateDiscount(id, off !== null ? off.toString() : "0")} className="bg-zinc-800 hover:bg-zinc-900 p-3 text-white cursor-pointer">add</button>
                                 </div>
                             </div>
                         </div>

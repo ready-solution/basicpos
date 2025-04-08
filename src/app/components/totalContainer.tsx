@@ -9,7 +9,11 @@ export default async function TotalContainer() {
         include: {
             CartItems: {
                 include: {
-                    Product: true,
+                    Product: {
+                        include: {
+                            Variants: true,
+                        }
+                    }
                 }
             }
         }
@@ -20,7 +24,17 @@ export default async function TotalContainer() {
     }, 0);
 
     const subtotal = cartTotalValue?.CartItems.reduce((total, item) => {
-        return total + (item.Product.Price * item.Quantity);
+        const product = item.Product;
+    
+        // Find the matching variant using VariantId from CartItem
+        const matchedVariant = product.Variants.find(v => v.Id === item.VariantId);
+    
+        const price =
+            product?.Price && product.Price > 0
+                ? product.Price
+                : matchedVariant?.Price || 0;
+    
+        return total + price * item.Quantity;
     }, 0);
 
     const grandtotal = (subtotal ?? 0) - (discountValue ?? 0);

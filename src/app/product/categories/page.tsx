@@ -1,4 +1,5 @@
 import prisma from "@/lib/db";
+import AddCategoryInput from "@/app/components/addCategory";
 
 export default async function CategoriesPage() {
     const categoryList = await prisma.category.findMany({
@@ -10,7 +11,8 @@ export default async function CategoriesPage() {
 
     return (
         <div className="w-full bg-zinc-100">
-            <table className="w-[280px] mx-auto divide-y-2 divide-gray-200 bg-white text-sm mt-5 shadow-md">
+            <AddCategoryInput/>
+            <table className="w-[480px] mx-auto divide-y-2 divide-gray-200 bg-white text-sm mt-5 shadow-md">
                 <thead className="ltr:text-left rtl:text-right">
                     <tr>
                         <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Id</th>

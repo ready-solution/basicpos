@@ -35,7 +35,8 @@ export default async function PaymentPage(props: {
     }, 0);
 
     const subtotal = cart?.CartItems.reduce((total, item) => {
-        return total + (item.Product.Price * item.Quantity);
+        const price = item.Product.Price > 0 ? item.Product.Price : item.Variant?.Price || 0;
+        return total + (price * item.Quantity);
     }, 0);
 
     const grandtotal = (subtotal ?? 0) - (discountValue ?? 0);
