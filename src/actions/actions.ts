@@ -349,7 +349,7 @@ export async function addProduct(formData: FormData) {
             Stock: stock, // Now included
             Enabled: enabled,
             categoryId: categoryId,
-            Available: true
+            Available: true,
         }
     });
 
@@ -388,7 +388,7 @@ export async function excelProduct(products: any[]) {
                 Stock: Number(product.stock) || 0, // Adds stock handling
                 Enabled: product.enabled === true, // Ensures the 'enabled' is a boolean
                 categoryId: categoryId,
-                Available: true
+                Available: true,
             }
         });
 
@@ -418,7 +418,7 @@ export async function excelProduct(products: any[]) {
             Stock: Number(product.stock) || 0,
             Enabled: Boolean(product.enabled),
             categoryId: categoryId,
-            Available: true
+            Available: true,
         });
     }
 
@@ -474,41 +474,54 @@ export async function mainProductPriceChange(id: number, price: number) {
 export async function addCategory(formData: FormData) {
     const categoryName = formData.get("category") as string;
     if (!categoryName) throw new Error("Category name is required.");
-
-    const baseSlug = categoryName.toLowerCase().replace(/\s+/g, "-");
-    let slug = baseSlug;
-    let counter = 1;
-
-    const existingCategories = await prisma.category.findMany({
-        select: { Slug: true },
+    const existingCategory = await prisma.category.findFirst({
+        where: {
+            Name: categoryName,
+        },
     });
-
-    const existingSlugs = new Set(existingCategories.map(c => c.Slug));
-
-    while (existingSlugs.has(slug)) {
-        slug = `${baseSlug}-${counter++}`;
-    }
-
+    if (existingCategory) {
+        throw new Error("Category name already exists.");
+    };
     await prisma.category.create({
         data: {
             Name: categoryName,
-            Slug: slug as string,
+            Slug: categoryName.replace(/\s+/g, "-").toLowerCase()
         },
     });
-    revalidatePath('/categories')
+    revalidatePath("/product/categories");
 }
 
-export async function deleteProduct(id: number) {
-    const product = await prisma.product.findUnique({ where: { Id: id } });
-    if (product) {
-        await prisma.product.update({
+export async function deleteProduct(ids: number[]) {
+    // Step 1: Validate input (ids should be an array of numbers)
+    if (!Array.isArray(ids) || ids.length === 0) {
+        throw new Error('Invalid product IDs');
+    }
+
+    try {
+        // Step 2: Delete the products from the database by marking available as false
+        const deletedProducts = await prisma.product.updateMany({
             where: {
-                Id: id
+                Id: {
+                    in: ids,
+                },
             },
             data: {
                 Available: false,
             }
         });
-    };
-    revalidatePath('/product');
+
+        // Step 3: Check if any products were deleted
+        if (deletedProducts.count === 0) {
+            throw new Error('No products found to delete');
+        }
+
+        // Step 4: Return success message
+        revalidatePath("/product");
+        return { success: true, message: `${deletedProducts.count} product(s) deleted successfully.` };
+    } catch (error) {
+        // Step 5: Handle errors
+        console.error('Error deleting products:', error);
+        throw new Error('Failed to delete products');
+    }
+    
 }

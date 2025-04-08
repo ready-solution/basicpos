@@ -5,6 +5,7 @@ import Link from "next/link";
 import { TiArrowLeft, TiArrowRight } from "react-icons/ti";
 import Search from "../order/components/search";
 import { productEnabled, deleteProduct } from "@/actions/actions";
+import { button, div } from "framer-motion/client";
 
 export default function ProductTable({
     productList,
@@ -24,10 +25,15 @@ export default function ProductTable({
         productEnabled(id)
     };
 
-    const handleDeleteProduct = async (id: number) => {
-        deleteProduct(id)
-    };
-    
+    const handleDeleteProducts = () => {
+        deleteProduct(Array.from(selectedRows))
+            .then(response => {
+                alert(response.message); // Now you can access message after promise is resolved
+            })
+            .catch(error => {
+                alert(`Error deleting product ${error}`); // Handle errors if any
+            });
+    };    
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
@@ -101,19 +107,29 @@ export default function ProductTable({
             {/* Search Bar */}
             <div className="flex flex-row mb-4">
                 <Search placeholder="search a product..." />
-                {/* Filter by Category */}
-                <select
-                    className="mb-4 px-4 text-sm py-2 border border-gray-300 bg-zinc-600 text-white cursor-pointer hover:bg-zinc-800"
-                    onChange={(e) => setFilterCategory(Number(e.target.value) || "all")}
-                    value={filterCategory}
-                >
-                    <option value="all">All Categories</option>
-                    {Object.keys(categoryMap).map((categoryId) => (
-                        <option key={categoryId} value={categoryId}>
-                            {categoryMap[Number(categoryId)]}
-                        </option>
-                    ))}
-                </select>
+                <div className="flex">
+                    {
+                        selectedRows.size > 0 && ( // Check if there are selected rows
+                            <div>
+                                <button className="bg-blue-200" onClick={handleDeleteProducts}>Delete</button>
+                            </div>
+                        )
+                    }
+
+                    {/* Filter by Category */}
+                    <select
+                        className="mb-4 px-4 text-sm py-2 border border-gray-300 bg-zinc-600 text-white cursor-pointer hover:bg-zinc-800"
+                        onChange={(e) => setFilterCategory(Number(e.target.value) || "all")}
+                        value={filterCategory}
+                    >
+                        <option value="all">All Categories</option>
+                        {Object.keys(categoryMap).map((categoryId) => (
+                            <option key={categoryId} value={categoryId}>
+                                {categoryMap[Number(categoryId)]}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </div>
             <div className="h-[500px] flex flex-col justify-between">
                 <div>
