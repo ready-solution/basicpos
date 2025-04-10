@@ -77,7 +77,7 @@ export default function AddDiscount({ id, discount }: itemProps) {
     return (
         <div>
             <button onClick={() => handleModal()} className="p-2 rounded-full hover:text-yellow-600 cursor-pointer">
-                <FaInfoCircle />
+                <MdDiscount />
             </button>
 
             {/* MODAL */}

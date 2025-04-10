@@ -1,156 +1,116 @@
-"use client"
+"use client";
 
 import ExcelJS from 'exceljs';
 import { useState } from "react";
 import Link from 'next/link';
+import FormatDownload from './batchFormat';
 import { excelProduct } from "@/actions/actions";
 import { BiArrowBack } from "react-icons/bi";
 
-export default function ExcelUpload() {
+type Props = {
+    categoryList: {
+        Id: number;
+        Name: string;
+        Slug: string;
+    }[];
+};
+
+export default function ExcelUpload({ categoryList }: Props) {
     const [file, setFile] = useState<File | null>(null);
     const [jsonData, setJsonData] = useState<any[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [showPreview, setShowPreview] = useState(true);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const uploadedFile = e.target.files?.[0];
         if (uploadedFile) {
             setFile(uploadedFile);
-            setError(null);  // Reset error when a new file is selected
+            setError(null);
         }
     };
 
     const handleFileUpload = async () => {
-        if (file) {
-            try {
-                const reader = new FileReader();
-                reader.onload = async () => {
-                    const workbook = new ExcelJS.Workbook();
-                    await workbook.xlsx.load(reader.result as ArrayBuffer); // Load Excel file
+        if (!file) return setError("No file selected");
+        try {
+            const reader = new FileReader();
+            reader.onload = async () => {
+                const workbook = new ExcelJS.Workbook();
+                await workbook.xlsx.load(reader.result as ArrayBuffer);
 
-                    const worksheet = workbook.worksheets[0]; // Get the first sheet
-                    const data: any[] = [];
+                const worksheet = workbook.worksheets[0];
+                const data: any[] = [];
+                const firstRow = worksheet.getRow(1);
+                const columns = firstRow?.values && Array.isArray(firstRow.values) && firstRow.values.length > 1
+                    ? firstRow.values.slice(1)
+                    : [];
 
-                    // Check if the first row exists and get column names from row 1
-                    const firstRow = worksheet.getRow(1);
-                    const columns = firstRow && firstRow.values && Array.isArray(firstRow.values) && firstRow.values.length > 1
-                        ? firstRow.values.slice(1)  // Slice starting from index 1 to skip the empty cell
-                        : [];
+                if (!columns.length) return setError("Invalid header row (columns missing). ");
 
-                    // Check if columns are valid (not null, undefined, or empty array)
-                    if (columns.length > 0) {
-                        // Start processing from row 2
-                        worksheet.eachRow((row, rowNumber) => {
-                            if (rowNumber > 1) { // Skip header row (row 1)
-                                const rowData: Record<string, any> = {};
-                                columns.forEach((col: any, idx: number) => {
-                                    if (col) {
-                                        rowData[col] = row.getCell(idx + 1).value; // Map the column to the value in the row
-                                    }
-                                });
-                                data.push(rowData);
-                            }
+                worksheet.eachRow((row, rowNumber) => {
+                    if (rowNumber > 1) {
+                        const rowData: Record<string, any> = {};
+                        columns.forEach((col: any, idx: number) => {
+                            if (col) rowData[col] = row.getCell(idx + 1).value;
                         });
-
-                        // Group products by name and add variants
-                        const groupedData: Record<string, any> = {};
-
-                        data.forEach(item => {
-                            const productName = item.name;
-
-                            // If the product doesn't exist in the groupedData, initialize it
-                            if (!groupedData[productName]) {
-                                groupedData[productName] = {
-                                    name: item.name,
-                                    price: item.price,
-                                    stock: item.stock,
-                                    enabled: item.enabled === "yes", // Convert "yes" to boolean
-                                    categoryId: item.categoryId,
-                                    variants: [] // Initialize variants as an empty array
-                                };
-                            }
-
-                            // If size and color are provided, treat it as a variant
-                            if (item.size && item.color) {
-                                groupedData[productName].variants.push({
-                                    size: item.size,
-                                    color: item.color,
-                                    vprice: item.vprice || item.price, // Use main product price if no variant price
-                                    vstock: item.vstock || item.stock // Use main product stock if no variant stock
-                                });
-                            }
-                        });
-
-                        // Flatten the grouped data into an array
-                        const plainJsonData = Object.values(groupedData);
-
-                        setJsonData(plainJsonData); // Set the grouped data for preview
-                    } else {
-                        setError("Invalid header row (columns missing).");
+                        data.push(rowData);
                     }
-                };
-                reader.readAsArrayBuffer(file); // Read file as an ArrayBuffer
-            } catch (err) {
-                setError("Error reading the file");
-                console.error(err);
-            }
-        } else {
-            setError("No file selected");
+                });
+
+                const grouped: Record<string, any> = {};
+                data.forEach(item => {
+                    const name = item.name;
+                    if (!grouped[name]) grouped[name] = {
+                        name,
+                        price: item.price,
+                        stock: item.stock,
+                        enabled: item.enabled === "yes",
+                        categoryId: item.categoryId,
+                        variants: []
+                    };
+
+                    if (item.size && item.color) grouped[name].variants.push({
+                        size: item.size,
+                        color: item.color,
+                        vprice: item.vprice || item.price,
+                        vstock: item.vstock || item.stock
+                    });
+                });
+
+                setJsonData(Object.values(grouped));
+            };
+            reader.readAsArrayBuffer(file);
+        } catch (err) {
+            setError("Error reading the file");
+            console.error(err);
         }
     };
 
-    interface Variant {
-        size: string;
-        color: string;
-        vprice: number;
-        vstock: number;
-    }
-
     const handleExcelPost = () => {
         try {
-            const groupedData: Record<string, any> = {}; // To store the grouped products
+            const groupedData: Record<string, any> = {};
 
-            // Group products and variants
             jsonData.forEach(item => {
-                const productName = item.name;
+                const name = item.name;
+                if (!groupedData[name]) groupedData[name] = {
+                    name,
+                    price: item.price,
+                    stock: item.stock,
+                    enabled: item.enabled === true,
+                    categoryId: item.categoryId,
+                    variants: []
+                };
 
-                // If the product doesn't exist in the groupedData, initialize it
-                if (!groupedData[productName]) {
-                    groupedData[productName] = {
-                        name: item.name,
-                        price: item.price,
-                        stock: item.stock,
-                        enabled: item.enabled === true, // Ensure boolean conversion for enabled
-                        categoryId: item.categoryId,
-                        variants: [] // Initialize variants as an empty array
-                    };
+                if (item.variants?.length > 0) {
+                    item.variants.forEach((v: any) => groupedData[name].variants.push({
+                        size: v.size,
+                        color: v.color,
+                        vprice: v.vprice || item.price,
+                        vstock: v.vstock || item.stock
+                    }));
                 }
-
-                // Loop through the variants if they exist in the item
-                if (item.variants && item.variants.length > 0) {
-                    item.variants.forEach((variant: Variant) => {
-                        // Add the variant data to the variants array for the product
-                        groupedData[productName].variants.push({
-                            size: variant.size,
-                            color: variant.color,
-                            vprice: variant.vprice || item.price, // Use main product price if no variant price
-                            vstock: variant.vstock || item.stock // Use main product stock if no variant stock
-                        });
-                    });
-                }
-
-                // Debug log to check the current product and its variants
-                console.log(`Processed item: ${productName}`, groupedData[productName]);
             });
 
-            // Flatten the grouped data into an array
-            const plainJsonData = Object.values(groupedData); // Convert groupedData object into an array
-
-            // Debug log to see the final structure of the grouped data
-            console.log("Final grouped data:", JSON.stringify(plainJsonData, null, 2));
-
-            // Pass the formatted data to the action function
-            excelProduct(plainJsonData);
-
+            excelProduct(Object.values(groupedData));
             setFile(null);
             setJsonData([]);
         } catch (err) {
@@ -160,117 +120,83 @@ export default function ExcelUpload() {
     };
 
     return (
-        <div className="bg-zinc-100 w-full p-5 h-full overflow-x-auto">
-            <div className='w-full flex'>
-                <Link href='/product' className='flex items-center space-x-1 focus:outline-none text-zinc-600 hover:text-zinc-800 hover:font-medium'>
-                    <BiArrowBack className='text-lg' />
-                    <span className='text-sm p-0'>Back</span>
+        <div className="w-full max-w-4xl mx-auto min-h-[90vh] p-6">
+            <div className="flex items-center justify-between mb-6">
+                <Link href="/product" className="flex items-center text-sm text-zinc-600 hover:text-zinc-800">
+                    <BiArrowBack className="mr-1" /> Back
                 </Link>
-
-                <div className="flex w-[480px] mx-auto space-x-2">
-                    <input
-                        type="file"
-                        accept=".xlsx,.xls"
-                        onChange={handleFileChange}
-                        className="w-4/5 px-4 py-3 border bg-white border-gray-300 focus:outline-none text-sm"
-                    />
-                    <div className="flex w-1/5">
-                        {/* Process File Button */}
-                        {jsonData.length === 0 && (
-                            <button
-                                onClick={handleFileUpload}
-                                className="w-full py-3 bg-zinc-600 hover:bg-zinc-800 text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm transition-all"
-                            >
-                                Process
-                            </button>
-                        )}
-
-                        {/* Upload to Database Button */}
-                        {jsonData.length > 0 && (
-                            <button
-                                className="w-full py-3 bg-zinc-600 text-white hover:bg-zinc-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all"
-                                onClick={handleExcelPost}
-                            >
-                                Upload
-                            </button>
-                        )}
-                    </div>
-                </div>
+                <FormatDownload categories={categoryList} />
             </div>
 
-            {/* Error Message */}
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <div className="flex flex-wrap gap-2 mb-2 items-center">
+                <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={handleFileChange}
+                    className="flex-grow px-4 py-2 border bg-white text-sm rounded"
+                />
+                <button
+                    onClick={jsonData.length === 0 ? handleFileUpload : handleExcelPost}
+                    className={`px-4 py-2 rounded text-white text-sm ${jsonData.length === 0 ? 'bg-zinc-700 hover:bg-zinc-800' : 'bg-green-600 hover:bg-green-800'}`}
+                >
+                    {jsonData.length === 0 ? 'Process' : 'Upload'}
+                </button>
+            </div>
 
-            {/* JSON Preview Section */}
+            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
             {jsonData.length > 0 && (
-                <div className="w-[480px] mx-auto mt-4">
-                    <h3 className="text-md font-semibold text-gray-800 mb-2">Preview</h3>
-                    <pre className="bg-zinc-950 text-gray-200 max-h-[80vh] p-4 text-xs overflow-y-auto">
-                        {JSON.stringify(jsonData, null, 2)}
-                    </pre>
-                    <p className='py-2 text-zinc-500 text-center'>Please check and make sure your data is correct.</p>
+                <div>
+                    <button
+                        onClick={() => setShowPreview(prev => !prev)}
+                        className="mb-2 text-sm text-zinc-600 hover:underline"
+                    >
+                        {showPreview ? "Hide Preview" : "Show Preview"}
+                    </button>
+
+                    {showPreview && (
+                        <div className="border rounded shadow">
+                            <div className="p-4 text-sm font-mono whitespace-pre-wrap text-gray-800 max-h-[400px] overflow-y-auto">
+                                {JSON.stringify(jsonData, null, 2)}
+                            </div>
+                            <p className="text-xs text-gray-500 text-center py-2 border-t">Feel free to review before uploading.</p>
+                        </div>
+                    )}
                 </div>
             )}
 
-            <div className="w-[580px] mx-auto mt-8">
-                <h3 className="text-md font-semibold text-gray-800 mb-2">Excel Format Example</h3>
-                <div className="overflow-x-auto">
-                    <table className="table-auto text-xs text-left w-full border border-gray-300 bg-white">
-                        <thead className="bg-zinc-200 text-gray-700">
-                            <tr>
-                                <th className="border px-2 py-1">name</th>
-                                <th className="border px-2 py-1">price</th>
-                                <th className="border px-2 py-1">stock</th>
-                                <th className="border px-2 py-1">enabled</th>
-                                <th className="border px-2 py-1">categoryId</th>
-                                <th className="border px-2 py-1">size</th>
-                                <th className="border px-2 py-1">color</th>
-                                <th className="border px-2 py-1">vprice</th>
-                                <th className="border px-2 py-1">vstock</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td className="border px-2 py-1">Basic Shirt</td>
-                                <td className="border px-2 py-1">0</td>
-                                <td className="border px-2 py-1">0</td>
-                                <td className="border px-2 py-1">yes</td>
-                                <td className="border px-2 py-1">1</td>
-                                <td className="border px-2 py-1">S</td>
-                                <td className="border px-2 py-1">White</td>
-                                <td className="border px-2 py-1">200000</td>
-                                <td className="border px-2 py-1">25</td>
-                            </tr>
-                            <tr>
-                                <td className="border px-2 py-1">Basic Jeans</td>
-                                <td className="border px-2 py-1">150000</td>
-                                <td className="border px-2 py-1">0</td>
-                                <td className="border px-2 py-1">yes</td>
-                                <td className="border px-2 py-1">2</td>
-                                <td className="border px-2 py-1">M</td>
-                                <td className="border px-2 py-1">Blue</td>
-                                <td className="border px-2 py-1">150000</td>
-                                <td className="border px-2 py-1">30</td>
-                            </tr>
-                            <tr>
-                                <td className="border px-2 py-1">Basic Shoe</td>
-                                <td className="border px-2 py-1">600000</td>
-                                <td className="border px-2 py-1">35</td>
-                                <td className="border px-2 py-1">yes</td>
-                                <td className="border px-2 py-1">3</td>
-                                <td className="border px-2 py-1">L</td>
-                                <td className="border px-2 py-1">Blue</td>
-                                <td className="border px-2 py-1">600000</td>
-                                <td className="border px-2 py-1">30</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            {jsonData.length === 0 && (
+                <div className="mt-10">
+                    <h3 className="text-md font-semibold text-gray-800 mb-2">Excel Format Example</h3>
+                    <div className="overflow-x-auto">
+                        <table className="text-xs w-full border border-gray-300">
+                            <thead className="bg-zinc-200 text-gray-700">
+                                <tr>
+                                    {["name", "price", "stock", "enabled", "categoryId", "size", "color", "vprice", "vstock"].map(header => (
+                                        <th key={header} className="border px-2 py-1">{header}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody className='bg-white'>
+                                {[
+                                    ["Basic Shirt", 0, 0, "yes", 1, "S", "White", 200000, 25],
+                                    ["Basic Jeans", 150000, 0, "yes", 2, "M", "Blue", 150000, 30],
+                                    ["Basic Shoe", 600000, 35, "yes", 3, "L", "Blue", 600000, 30]
+                                ].map((row, i) => (
+                                    <tr key={i}>
+                                        {row.map((cell, j) => (
+                                            <td key={j} className="border px-2 py-1">{cell}</td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                        *If product has variants, price/stock will be taken from <strong>vprice</strong> and <strong>vstock</strong>. If not provided, it will fallback to main product price/stock.
+                    </p>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                    *If product has variants, price/stock will be taken from <strong>vprice</strong> and <strong>vstock</strong>. If not provided, it will fallback to main product price/stock.
-                </p>
-            </div>
-
+            )}
         </div>
-    )
+    );
 }

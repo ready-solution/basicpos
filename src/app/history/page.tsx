@@ -1,5 +1,4 @@
 import prisma from "@/lib/db";
-import Link from "next/link";
 import HistoryTable from "../components/historyTable";
 
 export default async function HistoryPage() {

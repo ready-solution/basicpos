@@ -358,75 +358,49 @@ export async function addProduct(formData: FormData) {
 }
 
 export async function excelProduct(products: any[]) {
-    const plainProducts = [];
-    console.log("Product JSON data:", JSON.stringify(products, null, 2));  // This will give you better insight into the product data
-
     for (const product of products) {
-        let baseSlug = product.name.replace(/\s+/g, "-").toLowerCase(); // Create initial slug
+        let baseSlug = product.name.replace(/\s+/g, "-").toLowerCase();
         let slug = baseSlug;
         let counter = 1;
 
-        // Ensure slug is unique
         while (await prisma.product.findUnique({ where: { Slug: slug } })) {
             slug = `${baseSlug}-${counter}`;
             counter++;
         }
 
-        // Validate category
         const categoryId = Number(product.categoryId);
         const categoryExists = await prisma.category.findUnique({ where: { Id: categoryId } });
         if (!categoryExists) {
             throw new Error(`Category with ID ${categoryId} does not exist.`);
         }
 
-        // Insert the main product
         const createdProduct = await prisma.product.create({
             data: {
-                Name: product.name as string,
+                Name: product.name,
                 Slug: slug,
-                Price: Number(product.price) || 0, // Ensures price is valid
-                Stock: Number(product.stock) || 0, // Adds stock handling
-                Enabled: product.enabled === true, // Ensures the 'enabled' is a boolean
+                Price: Number(product.price) || 0,
+                Stock: Number(product.stock) || 0,
+                Enabled: product.enabled === true,
                 categoryId: categoryId,
                 Available: true,
             }
         });
 
-        // Insert variants if they exist
         if (product.variants && product.variants.length > 0) {
             const productVariants = product.variants.map((variant: any) => ({
-                ProductId: createdProduct.Id, // Link the variant to the main product
-                Size: variant.size as string,
+                ProductId: createdProduct.Id,
+                Size: String(variant.size), // Ensure string
                 Color: variant.color,
-                Price: variant.vprice || createdProduct.Price, // Use main product price if variant price is not provided
-                Stock: variant.vstock || createdProduct.Stock, // Use main product stock if variant stock is not provided
+                Price: variant.vprice || createdProduct.Price,
+                Stock: variant.vstock || createdProduct.Stock,
             }));
 
-            // Insert variants in bulk
             await prisma.productVariant.createMany({
                 data: productVariants,
-                skipDuplicates: true, // Skip duplicates
+                skipDuplicates: true,
             });
-
         }
-
-        // Prepare the product data for the bulk insert
-        plainProducts.push({
-            Name: product.name as string,
-            Slug: slug,
-            Price: Number(product.price) || 0,
-            Stock: Number(product.stock) || 0,
-            Enabled: Boolean(product.enabled),
-            categoryId: categoryId,
-            Available: true,
-        });
     }
-
-    // Bulk insert products (main products)
-    await prisma.product.createMany({
-        data: plainProducts,
-        skipDuplicates: true, // Prevents duplicate errors
-    });
 
     revalidatePath("/product");
 }
@@ -523,5 +497,5 @@ export async function deleteProduct(ids: number[]) {
         console.error('Error deleting products:', error);
         throw new Error('Failed to delete products');
     }
-    
+
 }

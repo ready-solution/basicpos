@@ -1,10 +1,12 @@
 import ExcelUpload from "../components/excelUpload";
-import Link from "next/link";
+import prisma from "@/lib/db";
 
-export default function BatchUploadPage() {
+export default async function BatchUploadPage() {
+    const categoryList = await prisma.category.findMany();
+
     return (
-        <div className="w-full">
-            <ExcelUpload />
+        <div className="w-full bg-zinc-100">
+            <ExcelUpload categoryList={categoryList} />
         </div>
     )
 }

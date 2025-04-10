@@ -1,207 +1,156 @@
-"use client"
+// ProductTable - Matches OrderHistory layout for design continuity
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { TiArrowLeft, TiArrowRight } from "react-icons/ti";
 import Search from "../order/components/search";
 import { productEnabled, deleteProduct } from "@/actions/actions";
-import { button, div } from "framer-motion/client";
 
 export default function ProductTable({
     productList,
-    categoryMap
+    categoryMap,
 }: {
     productList: any[];
     categoryMap: Record<number, string>;
 }) {
-    // State for search, sorting, filtering, and pagination
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     const [filterCategory, setFilterCategory] = useState<number | "all">("all");
-    const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set()); // To keep track of selected rows
-    const [selectAll, setSelectAll] = useState(false); // To handle "Select All" checkbox
+    const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+    const [selectAll, setSelectAll] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
-    const handleProductEnabled = (id: number) => {
-        // Handle enabling/disabling product
-        productEnabled(id)
-    };
+    const handleProductEnabled = (id: number) => productEnabled(id);
 
     const handleDeleteProducts = () => {
         deleteProduct(Array.from(selectedRows))
-            .then(response => {
-                alert(response.message); // Now you can access message after promise is resolved
-            })
-            .catch(error => {
-                alert(`Error deleting product ${error}`); // Handle errors if any
-            });
-    };    
+            .then((res) => alert(res.message))
+            .catch((err) => alert(`Error deleting product ${err}`));
+    };
 
-    // Pagination states
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10; // Items per page
+    const filteredProducts = productList.filter(
+        (product) => filterCategory === "all" || product.categoryId === filterCategory
+    );
 
-    // Filter products based on search and category
-    const filteredProducts = productList.filter((product) => {
-        const matchesCategory = filterCategory === "all" || product.categoryId === filterCategory;
-        return matchesCategory;
-    });
-
-    // Sort the filtered products
     const sortedProducts = filteredProducts.sort((a, b) => {
         const comparison = a.Name.localeCompare(b.Name);
         return sortOrder === "asc" ? comparison : -comparison;
     });
 
-    // Pagination: Calculate the slice of products to display
-    const indexOfLastProduct = currentPage * itemsPerPage;
-    const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
-    const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+    const indexOfLast = currentPage * itemsPerPage;
+    const indexOfFirst = indexOfLast - itemsPerPage;
+    const currentProducts = sortedProducts.slice(indexOfFirst, indexOfLast);
 
-    // Handle selecting/deselecting a row
     const handleRowSelection = (id: number) => {
-        const newSelectedRows = new Set(selectedRows);
-        if (newSelectedRows.has(id)) {
-            newSelectedRows.delete(id);
-        } else {
-            newSelectedRows.add(id);
-        }
-        setSelectedRows(newSelectedRows);
-        setSelectAll(newSelectedRows.size === currentProducts.length);
+        const updated = new Set(selectedRows);
+        updated.has(id) ? updated.delete(id) : updated.add(id);
+        setSelectedRows(updated);
+        setSelectAll(updated.size === currentProducts.length);
     };
 
-    // Handle "Select All" checkbox
     const handleSelectAll = () => {
-        const newSelectedRows = new Set<number>();
-        if (!selectAll) {
-            currentProducts.forEach(product => {
-                newSelectedRows.add(product.Id);
-            });
-        }
-        setSelectedRows(newSelectedRows);
+        const updated = new Set<number>();
+        if (!selectAll) currentProducts.forEach((p) => updated.add(p.Id));
+        setSelectedRows(updated);
         setSelectAll(!selectAll);
     };
 
-    // Toggle sorting order
-    const toggleSortOrder = () => {
-        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    };
-
-    // Handle page change
+    const toggleSortOrder = () => setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    const handlePageChange = (page: number) => setCurrentPage(page);
+    const goToPreviousPage = () => currentPage > 1 && setCurrentPage(currentPage - 1);
     const goToNextPage = () => {
-        if (currentPage < Math.ceil(sortedProducts.length / itemsPerPage)) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
-
-    const goToPreviousPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
-
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
+        const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
+        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
 
     return (
-        <div className="w-[50vw] h-[90%] mx-auto mt-5 flex flex-col">
-            {/* Search Bar */}
-            <div className="flex flex-row mb-4">
-                <Search placeholder="search a product..." />
-                <div className="flex">
-                    {
-                        selectedRows.size > 0 && ( // Check if there are selected rows
-                            <div>
-                                <button className="bg-blue-200" onClick={handleDeleteProducts}>Delete</button>
-                            </div>
-                        )
-                    }
-
-                    {/* Filter by Category */}
-                    <select
-                        className="mb-4 px-4 text-sm py-2 border border-gray-300 bg-zinc-600 text-white cursor-pointer hover:bg-zinc-800"
-                        onChange={(e) => setFilterCategory(Number(e.target.value) || "all")}
-                        value={filterCategory}
-                    >
-                        <option value="all">All Categories</option>
-                        {Object.keys(categoryMap).map((categoryId) => (
-                            <option key={categoryId} value={categoryId}>
-                                {categoryMap[Number(categoryId)]}
-                            </option>
-                        ))}
-                    </select>
+        <div className="w-full max-w-[1200px] mx-auto min-h-[calc(100vh-180px)] flex flex-col justify-between">
+            <div>
+                <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
+                    <div className="w-2/3">
+                        <Search placeholder="Search a product..." />
+                    </div>
+                    <div className="flex gap-2">
+                        {selectedRows.size > 0 && (
+                            <button
+                                onClick={handleDeleteProducts}
+                                className="rounded bg-zinc-600 px-4 py-2 text-sm text-white hover:bg-zinc-800 cursor-pointer"
+                            >
+                                Delete
+                            </button>
+                        )}
+                        <select
+                            className="px-4 py-2 text-sm bg-white border border-gray-300 rounded shadow-sm"
+                            onChange={(e) => setFilterCategory(Number(e.target.value) || "all")}
+                            value={filterCategory}
+                        >
+                            <option value="all">All Categories</option>
+                            {Object.entries(categoryMap).map(([id, name]) => (
+                                <option key={id} value={id}>{name}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div className="h-[500px] flex flex-col justify-between">
-                <div>
-                    {/* Table */}
-                    <table className="w-full divide-y-2 divide-gray-200 bg-white text-sm">
-                        <thead className="ltr:text-left rtl:text-right bg-zinc-200">
+
+                <div className="overflow-x-auto bg-white shadow-sm rounded border border-gray-200">
+                    <table className="min-w-full text-sm text-left">
+                        <thead className="bg-zinc-200 text-gray-700">
                             <tr>
-                                <th className="whitespace-nowrap px-4 py-2 font-medium text-center">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectAll}
-                                        onChange={handleSelectAll}
-                                    />
+                                <th className="px-4 py-2 text-left font-medium">
+                                    <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
                                 </th>
-                                <th className="whitespace-nowrap px-4 py-2 font-medium">Name</th>
-                                <th className="whitespace-nowrap px-4 py-2 font-medium">Category</th>
-                                <th className="whitespace-nowrap px-4 py-2 font-medium">Price</th>
-                                <th className="whitespace-nowrap px-4 py-2 font-medium text-center">Stock</th>
+                                <th className="px-4 py-2 text-left font-medium">Name</th>
+                                <th className="px-4 py-2 text-left font-medium">Category</th>
+                                <th className="px-4 py-2 text-left font-medium">Price</th>
+                                <th className="px-4 py-2 text-center font-medium">Stock</th>
                                 <th
-                                    className="whitespace-nowrap px-4 py-2 font-medium cursor-pointer text-center"
+                                    className="px-4 py-2 text-center font-medium cursor-pointer"
                                     onClick={toggleSortOrder}
                                 >
                                     Enabled {sortOrder === "asc" ? "↑" : "↓"}
                                 </th>
-                                <th className="whitespace-nowrap px-4 py-2 font-medium text-center">Delete</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="divide-y bg-white divide-gray-100">
                             {currentProducts.map((x) => (
-                                <tr key={x.Id}>
-                                    <td className="whitespace-nowrap px-4 py-2 text-center">
+                                <tr key={x.Id} className="hover:bg-zinc-50">
+                                    <td className="px-4 py-2 text-gray-600">
                                         <input
                                             type="checkbox"
                                             checked={selectedRows.has(x.Id)}
                                             onChange={() => handleRowSelection(x.Id)}
                                         />
                                     </td>
-                                    <td className="whitespace-nowrap px-4 py-2 font-medium">
-                                        <Link href={`/product/${x.Slug}`} className="hover:text-zinc-400 active:text-zinc-800 text-gray-600">
-                                            {x.Name} {x.Variants[0] ? '**' : ''}
+                                    <td className="px-4 py-2 text-gray-600">
+                                        <Link
+                                            href={`/product/${x.Slug}`}
+                                            className="text-zinc-700 hover:underline"
+                                        >
+                                            {x.Name} {x.Variants[0] ? "**" : ""}
                                         </Link>
                                     </td>
-                                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                                        {categoryMap[x.categoryId]}
-                                    </td>
-                                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                                    <td className="px-4 py-2 text-gray-600">{categoryMap[x.categoryId]}</td>
+                                    <td className="px-4 py-2 text-gray-600">
                                         {x.Price.toLocaleString("id-ID", {
                                             style: "currency",
                                             currency: "IDR",
                                             minimumFractionDigits: 0,
-                                            maximumFractionDigits: 0
                                         })}
                                     </td>
-                                    <td className="whitespace-nowrap px-4 py-2 text-gray-700 text-center">
-                                        {x.Stock}
+                                    <td className="px-4 py-2 text-gray-600 text-center">
+                                        {x.Variants?.length > 0
+                                            ? x.Variants.reduce((sum: number, v: any) => sum + (v.Stock || 0), 0)
+                                            : x.Stock}
                                     </td>
-                                    <td className="whitespace-nowrap px-4 py-2 text-gray-700 text-center flex justify-center">
+                                    <td className="px-4 py-2 text-gray-600 text-center">
                                         <button
                                             onClick={() => handleProductEnabled(x.Id)}
-                                            className={`relative inline-flex items-center h-5 cursor-pointer rounded-full w-8 ${x.Enabled ? 'bg-zinc-600' : 'bg-gray-300'}`}
+                                            className={`relative cursor-pointer inline-flex items-center h-5 w-8 rounded-full transition ${x.Enabled ? "bg-emerald-800" : "bg-gray-300"}`}
                                         >
                                             <span
-                                                className={`absolute inline-block w-3 h-3 transform bg-white rounded-full transition-transform ${x.Enabled ? 'translate-x-4' : 'translate-x-1'}`}
+                                                className={`absolute left-1 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white transition-transform ${x.Enabled ? "translate-x-3" : "translate-x-0"}`}
                                             />
-                                        </button>
-                                    </td>
-                                    <td className="whitespace-nowrap px-4 py-2 text-center">
-                                        <button
-                                            onClick={() => handleDeleteProducts()}
-                                            className="text-red-600 hover:text-red-800 text-xs cursor-pointer"
-                                        >
-                                            Delete
                                         </button>
                                     </td>
                                 </tr>
@@ -209,35 +158,36 @@ export default function ProductTable({
                         </tbody>
                     </table>
                 </div>
+            </div>
 
-                {/* Pagination Controls */}
-                <div className="flex justify-between items-center mt-4">
+            {/* Pagination */}
+            <div className="flex justify-center items-center mt-10 space-x-4">
+                <button
+                    className="p-2 rounded-full bg-gray-200 hover:bg-zinc-600 hover:text-white disabled:opacity-50"
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                >
+                    <TiArrowLeft size={20} />
+                </button>
+                {Array.from({ length: Math.ceil(sortedProducts.length / itemsPerPage) }, (_, i) => (
                     <button
-                        className="p-1 bg-gray-300 rounded-full hover:bg-zinc-800 hover:text-white cursor-pointer"
-                        onClick={goToPreviousPage}
-                        disabled={currentPage === 1}
+                        key={i}
+                        onClick={() => handlePageChange(i + 1)}
+                        className={`w-8 h-8 text-sm rounded-full flex items-center justify-center transition-colors duration-200 ${currentPage === i + 1
+                            ? "bg-zinc-700 text-white"
+                            : "bg-gray-100 hover:bg-zinc-200"
+                            }`}
                     >
-                        <TiArrowLeft size={30} />
+                        {i + 1}
                     </button>
-                    <div className="flex space-x-2">
-                        {Array.from({ length: Math.ceil(sortedProducts.length / itemsPerPage) }, (_, i) => (
-                            <button
-                                key={i}
-                                className={`px-3 py-2 rounded-full text-xs ${currentPage === i + 1 ? "bg-zinc-600 hover:bg-zinc-800 text-white" : "bg-gray-200"}`}
-                                onClick={() => handlePageChange(i + 1)}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-                    </div>
-                    <button
-                        className="p-1 bg-gray-300 rounded-full hover:bg-zinc-800 hover:text-white cursor-pointer"
-                        onClick={goToNextPage}
-                        disabled={currentPage === Math.ceil(sortedProducts.length / itemsPerPage)}
-                    >
-                        <TiArrowRight size={30} />
-                    </button>
-                </div>
+                ))}
+                <button
+                    className="p-2 rounded-full bg-gray-200 hover:bg-zinc-600 hover:text-white disabled:opacity-50"
+                    onClick={goToNextPage}
+                    disabled={currentPage === Math.ceil(sortedProducts.length / itemsPerPage)}
+                >
+                    <TiArrowRight size={20} />
+                </button>
             </div>
         </div>
     );

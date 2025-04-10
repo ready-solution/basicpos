@@ -77,12 +77,7 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
                     </h3>
                     <div className="flex justify-between w-full items-end">
                         <p>
-                            {product.Price.toLocaleString("id-ID", {
-                                style: "currency",
-                                currency: "IDR",
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0,
-                            })}
+                            **
                         </p>
                         <FaThList size={10} />
                     </div>
@@ -107,12 +102,13 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
                             <div className="flex flex-col justify-between pb-5 border-b mb-5">
                                 <h1 className="font-medium text-lg">{selectedProduct.Name}</h1>
                                 <p className="text-xl font-semibold">
-                                    {selectedProduct.Price.toLocaleString("id-ID", {
-                                        style: "currency",
-                                        currency: "IDR",
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 0,
-                                    })}
+                                    {(variant.find(v => v.Size === selectedSize && v.Color === selectedColor)?.Price ?? selectedProduct.Price)
+                                        .toLocaleString("id-ID", {
+                                            style: "currency",
+                                            currency: "IDR",
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
+                                        })}
                                 </p>
                             </div>
 

@@ -37,6 +37,9 @@ export default async function OrderPage(props: {
                 ...(categoryId ? [{ categoryId: categoryId }] : []),
             ],
         },
+        include: {
+            Variants: true,
+        },
     });
 
     const productVariant = await prisma.productVariant.findMany({});

@@ -5,9 +5,7 @@ import { FaCartPlus } from "react-icons/fa6";
 export default async function CartContainer() {
     const cart = await prisma.cart.findFirst({
         where: {
-            Status: {
-                contains: "active"
-            }
+            Status: "active"
         },
         include: {
             CartItems: {
@@ -41,7 +39,7 @@ export default async function CartContainer() {
             ) : (
                 <div className="w-full rounded-md max-h-[60vh] h-full flex flex-col justify-center items-center">
                     <FaCartPlus size={40} color="grey" />
-                    {/* <p className="text-gray-500">add an item</p> */}
+                    <div className="text-gray-500 text-sm mt-2">Your cart is empty</div>
                 </div>
             )}
         </div>

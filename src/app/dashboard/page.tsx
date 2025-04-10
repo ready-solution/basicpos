@@ -42,7 +42,7 @@ export default async function DashboardPage() {
     });
     
     return (
-        <div className="w-full bg-zinc-100 p-4">
+        <div className="w-full max-h-screen overflow-y-auto bg-zinc-100 p-4">
             <TotalSalesContainer orders={orders} />
             <ProductPerformanceReport orderDetails={orderDetails} categories={categories} />
         </div>
