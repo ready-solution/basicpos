@@ -8,11 +8,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 40,
         paddingVertical: 10,
         fontSize: 10,
-        fontFamily: 'Helvetica',
+        fontFamily: 'Courier',
     },
     section: {
         marginBottom: 10,
-        marginTop: 10
+        marginTop: 20
         // minHeight: 400,
     },
     title: {
@@ -72,7 +72,8 @@ const styles = StyleSheet.create({
     invoiceNo: {
         textAlign: 'center',
         fontWeight: 'bold',
-        marginVertical: 3
+        marginVertical: 3,
+        fontSize: 12
     }
 });
 
@@ -142,20 +143,20 @@ export default function Receipt({ order, storeName, storeAddress, storeContact }
                 <Page size="A6" style={styles.page}>
                     {/* Store Information */}
                     <View style={styles.storeInfo}>
-                        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>
                             {storeName}
                         </Text>
                         <Text style={styles.smallText}>{storeAddress}</Text>
                         <Text style={styles.smallText}>{storeContact}</Text>
                     </View>
-                    <View style={styles.line}></View>
+                    
                     <View style={styles.invoiceNo}>
                         <Text>
                             {InvoiceNo}
                         </Text>
                     </View>
-
                     <View style={styles.line}></View>
+
                     {/* Purchased Items */}
                     <View style={styles.section}>
                         {order.OrderDetails.map((item, index) => (

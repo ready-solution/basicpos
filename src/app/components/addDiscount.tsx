@@ -1,105 +1,122 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { MdDiscount } from "react-icons/md";
-import { FaInfoCircle } from "react-icons/fa";
 import { addDiscount } from "@/actions/actions";
+import { motion } from "framer-motion";
 
-interface itemProps {
+interface ItemProps {
     id: number;
     discount: number;
 }
 
-export default function AddDiscount({ id, discount }: itemProps) {
-    const [isModalOpen, setIsModalOpen] = useState(false); // State to track modal visibility
-    const [off, setOff] = useState(0);
+export default function AddDiscount({ id, discount }: ItemProps) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [off, setOff] = useState(discount);
+    const [showToast, setShowToast] = useState(false);
 
-    const handleModal = () => {
-        if (isModalOpen == true) {
-            setIsModalOpen(false)
-        } else {
-            setIsModalOpen(true)
-        }
-    };
+    const toggleModal = () => setIsModalOpen(prev => !prev);
+    const closeModal = () => setIsModalOpen(false);
 
     const handleDiscountValue = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let value = e.target.value.replace(/[^\d]/g, "");
-        if (value === "") {
-            setOff(0);
-        } else {
-            // Set the pay value as a number without any formatting
-            setOff(Number(value));
-        }
+        const value = e.target.value.replace(/[^\d]/g, "");
+        setOff(value ? Number(value) : 0);
     };
 
-    const updateDiscount = (id: number, amount: string) => {
-        addDiscount(id, amount);
-        setIsModalOpen(false);
+    const updateDiscount = () => {
+        addDiscount(id, off.toString());
+        closeModal();
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 2000); // simple fade-out
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter") {
-            updateDiscount(id, off !== null ? off.toString() : "0");
-        }
-    };
-
-    const handleModalClose = () => {
-        setIsModalOpen(false);
-    };
-    
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("id-ID", {
-            style: "currency",
-            currency: "IDR",
-            maximumFractionDigits: 0, // No decimals
-        }).format(amount);
+        if (e.key === "Enter") updateDiscount();
     };
 
     useEffect(() => {
-        // Close the modal if Esc key is pressed
         const handleEscKey = (e: KeyboardEvent) => {
-            if (e.key === "Escape") {
-                handleModal(); // Close the modal
-            }
+            if (e.key === "Escape") closeModal();
         };
 
-        // Add event listener when modal is open
         if (isModalOpen) {
             document.addEventListener("keydown", handleEscKey);
         }
 
-        // Cleanup event listener on component unmount or when modal is closed
         return () => {
             document.removeEventListener("keydown", handleEscKey);
         };
-    }, [isModalOpen, handleModal]);
+    }, [isModalOpen]);
+
+    useEffect(() => {
+        setOff(discount);
+    }, [discount]);
 
     return (
         <div>
-            <button onClick={() => handleModal()} className="p-2 rounded-full hover:text-yellow-600 cursor-pointer">
-                <MdDiscount />
+            <button
+                type="button"
+                title="Add Discount"
+                onClick={toggleModal}
+                className="p-2 rounded-full hover:text-emerald-400 transition duration-150 cursor-pointer"
+            >
+                <MdDiscount size={20} />
             </button>
 
-            {/* MODAL */}
-            {
-                isModalOpen && (
-                    <div className="fixed inset-0 flex justify-center items-center bg-black/50 backdrop-blur-xs" onClick={handleModalClose}>
-                        <div className="bg-white rounded-md p-6 w-1/3" onClick={(e) => e.stopPropagation()}>
-                            <h2 className="text-center font-medium pb-10">Add discount</h2>
-                            <div className="space-y-5 flex flex-col">
-                                <input
-                                    onChange={(e) => handleDiscountValue(e)} onKeyDown={handleKeyDown}
-                                    defaultValue={discount > 0 ? discount : ""}
-                                    type="number" name="discount"
-                                    className="bg-white border-1 px-3 py-2 appearance-none" />
-                                <div className="flex flex-col space-y-2 pt-5">
-                                    <button onClick={() => updateDiscount(id, off !== null ? off.toString() : "0")} className="bg-zinc-800 hover:bg-zinc-900 p-3 text-white cursor-pointer">add</button>
-                                </div>
-                            </div>
+            {isModalOpen && (
+                <div
+                    className="fixed inset-0 flex justify-center items-center bg-black/50 backdrop-blur-sm z-50"
+                    onClick={closeModal}
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="bg-white shadow-lg border rounded p-6 w-full max-w-md"
+                        role="dialog"
+                        aria-modal="true"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h2 className="text-lg font-semibold text-center border-b pb-4 mb-6">Add Discount</h2>
+
+                        <div className="flex flex-col gap-4">
+                            <label htmlFor="discount" className="text-sm text-gray-700">Enter discount amount (IDR)</label>
+                            <input
+                                id="discount"
+                                type="number"
+                                value={off > 0 ? off : ""}
+                                onChange={handleDiscountValue}
+                                onKeyDown={handleKeyDown}
+                                className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
+                                placeholder="e.g. 10000"
+                                min={0}
+                            />
+
+                            {off > 0 && (
+                                <span className="text-xs text-gray-500">
+                                    You’re setting: <strong>{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(off)}</strong>
+                                </span>
+                            )}
+
+                            <button
+                                type="button"
+                                onClick={updateDiscount}
+                                className="mt-4 bg-zinc-800 hover:bg-zinc-900 text-white py-2 rounded transition cursor-pointer"
+                            >
+                                Apply Discount
+                            </button>
                         </div>
-                    </div>
-                )
-            }
+                    </motion.div>
+                </div>
+            )}
+
+            {/* Toast */}
+            {showToast && (
+                <div className="fixed bottom-5 right-5 bg-green-600 text-white py-2 px-4 rounded shadow-lg text-sm z-[60]">
+                    Discount applied!
+                </div>
+            )}
         </div>
-    )
+    );
 }

@@ -17,12 +17,12 @@ export default function PaymentMethod() {
     };
 
     return (
-        <div className="flex flex-col w-[30%] border-t-1 mx-auto space-y-2 justify-center pt-2">
+        <div className="flex flex-col w-full border-t-1 mx-auto space-y-2 justify-center pt-2">
             <select
                 id="payment-method"
                 value={paymentMethod}
                 onChange={handlePaymentChange}
-                className="border p-2 bg-zinc-100 text-stone-700"
+                className="border p-2 bg-white text-stone-700"
             >
                 <option value="">Select payment method</option>
                 <option value="CASH">Cash</option>

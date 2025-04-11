@@ -34,13 +34,13 @@ export default function Changes({ total }: TotalPayment) {
     const changes = pay - total;
 
     return (
-        <div className="w-[30%] mx-auto space-y-2">
+        <div className="w-full mt-3 mx-auto space-y-2">
             <label className="text-sm">Customer cash</label>
             <input
                 type="text"
                 value={formatCurrency(pay)} // Display formatted value
                 onChange={handleChanges} // Handle changes as user types
-                className="bg-zinc-100 border w-full p-2"
+                className="bg-white border w-full p-2"
                 placeholder="customer cash"
                 // Prevent user from inputting non-numeric characters
                 onInput={(e) => e.preventDefault()}
