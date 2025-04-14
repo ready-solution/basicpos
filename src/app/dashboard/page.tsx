@@ -40,11 +40,13 @@ export default async function DashboardPage() {
             Name: true,
         }
     });
+
+    const products = await prisma.product.findMany();
     
     return (
         <div className="w-full max-h-screen overflow-y-auto bg-zinc-100 p-4">
             <TotalSalesContainer orders={orders} />
-            <ProductPerformanceReport orderDetails={orderDetails} categories={categories} />
+            <ProductPerformanceReport orderDetails={orderDetails} categories={categories} products={products} />
         </div>
     );
 }

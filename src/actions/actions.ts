@@ -499,3 +499,102 @@ export async function deleteProduct(ids: number[]) {
     }
 
 }
+
+export async function addVariants(formData: FormData) {
+    const productId = parseInt(formData.get("productId") as string);
+
+    if (!productId || isNaN(productId)) {
+        throw new Error("Invalid product ID");
+    }
+
+    const raw = formData.get("variants") as string;
+    const variants: {
+        Color: string;
+        Size: string;
+        Price: number;
+        Stock: number;
+    }[] = JSON.parse(raw);
+
+    if (!variants.length) throw new Error("No variants submitted.");
+
+    const dataToCreate = variants.map((v) => ({
+        ProductId: productId,
+        Color: v.Color,
+        Size: v.Size,
+        Price: v.Price,
+        Stock: v.Stock,
+    }));
+
+    await prisma.productVariant.createMany({ data: dataToCreate });
+
+    revalidatePath(`/product/${productId}`);
+}
+
+export async function updateVariant(formData: FormData) {
+    const variantId = parseInt(formData.get("variantId") as string);
+    const size = formData.get("size") as string;
+    const price = parseFloat(formData.get("price") as string);
+    const stock = parseInt(formData.get("stock") as string);
+
+    if (!variantId || isNaN(variantId)) throw new Error("Invalid variant ID");
+
+    await prisma.productVariant.update({
+        where: { Id: variantId },
+        data: {
+            Size: size,
+            Price: price,
+            Stock: stock,
+        },
+    });
+
+    const productId = formData.get("productId") as string;
+    revalidatePath(`/product/${productId}`);
+}
+
+function generateSlug(text: string) {
+    return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')     // remove special characters
+        .replace(/\s+/g, '-')             // replace spaces with dashes
+        .replace(/-+/g, '-');             // collapse multiple dashes
+}
+
+export async function batchAddCategories(names: string[]) {
+    for (const name of names) {
+        const existingByName = await prisma.category.findFirst({ where: { Name: name } });
+        if (existingByName) continue;
+
+        const baseSlug = generateSlug(name);
+
+        // Find slugs that start with baseSlug
+        const similarSlugs = await prisma.category.findMany({
+            where: {
+                Slug: {
+                    startsWith: baseSlug,
+                },
+            },
+            select: { Slug: true },
+        });
+
+        let finalSlug = baseSlug;
+        if (similarSlugs.length > 0) {
+            const usedNumbers = similarSlugs
+                .map(s => s.Slug.match(new RegExp(`^${baseSlug}-(\\d+)$`)))
+                .filter(Boolean)
+                .map(m => parseInt(m![1]))
+                .filter(n => !isNaN(n));
+
+            const nextNumber = usedNumbers.length > 0 ? Math.max(...usedNumbers) + 1 : 1;
+            finalSlug = `${baseSlug}-${nextNumber}`;
+        }
+
+        await prisma.category.create({
+            data: {
+                Name: name,
+                Slug: finalSlug,
+            },
+        });
+    }
+    revalidatePath('/product/categories');
+}

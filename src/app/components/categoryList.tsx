@@ -1,9 +1,9 @@
-"use client"
+"use client";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 
 type Category = {
-    Id: Number;
+    Id: number;
     Name: string;
     Slug: string;
 };
@@ -17,55 +17,57 @@ export default function CategoryList({ categories }: CategoryListProps) {
     const pathname = usePathname();
     const { replace } = useRouter();
 
-    const currentCategory = searchParams.get('category');
+    const currentCategory = searchParams.get("category");
 
     const handleCategoryClick = (slug: string) => {
+        if (slug === currentCategory) return; // avoid unnecessary rerender
+
         const params = new URLSearchParams(searchParams);
         if (slug) {
-            params.set('category', slug);
+            params.set("category", slug);
         } else {
-            params.set('category', slug);
+            params.delete("category");
         }
         replace(`${pathname}?${params.toString()}`);
     };
 
     return (
-        <div className="w-full max-w-full overflow-x-auto">
-            {/* Buttons for larger screens */}
-            <div className="hidden sm:flex overflow-x-auto">
-                <Link
-                    href='/order'
-                    className={`${pathname == '/order' && !searchParams.toString() ? 'bg-zinc-600 text-white' : ''} shrink-0 border border-transparent py-2 px-4 text-sm font-medium text-gray-800 hover:text-white hover:bg-zinc-600 cursor-pointer`}
+        <div className="w-full max-w-full bg-zinc-200 px-1">
+            <div className="hidden sm:flex overflow-x-auto no-scrollbar gap-1 py-2 px-1">
+                <button
+                    onClick={() => handleCategoryClick("")}
+                    className={`shrink-0 rounded px-4 py-2 text-sm font-medium border transition-all cursor-pointer
+                        ${!currentCategory ? "bg-zinc-700 text-white" : "text-gray-800 hover:bg-zinc-600 hover:text-white"}`}
                 >
                     All
-                </Link>
-                {
-                    categories.map((cat, idx) => (
-                        <button
-                            key={idx} onClick={() => handleCategoryClick(cat.Slug)}
-                            className={`${currentCategory == `${cat.Slug}` ? 'bg-zinc-600 text-white' : ''} shrink-0 border border-transparent py-2 px-2 text-sm font-medium text-gray-800 hover:text-white hover:bg-zinc-600 cursor-pointer`}
-                        >
-                            {cat.Name}
-                        </button>
-                    ))
-                }
+                </button>
+                {categories.map((cat) => (
+                    <button
+                        key={cat.Id}
+                        onClick={() => handleCategoryClick(cat.Slug)}
+                        className={`shrink-0 rounded px-4 py-2 text-sm font-medium border transition-all cursor-pointer
+                            ${currentCategory === cat.Slug ? "bg-zinc-700 text-white" : "text-gray-800 hover:bg-zinc-600 hover:text-white"}`}
+                    >
+                        {cat.Name}
+                    </button>
+                ))}
             </div>
 
-            <div className="sm:hidden">
+            {/* Mobile dropdown */}
+            <div className="sm:hidden p-2">
                 <select
                     onChange={(e) => handleCategoryClick(e.target.value)}
-                    className="w-full p-2 text-sm font-medium text-gray-800 border border-zinc-800 focus:outline-none"
+                    value={currentCategory || ""}
+                    className="w-full border border-zinc-700 text-sm rounded px-2 py-2 bg-white text-gray-800"
                 >
                     <option value="">All</option>
-                    {
-                        categories.map((cat, idx) => (
-                            <option key={idx} value={cat.Slug}>
-                                {cat.Name}
-                            </option>
-                        ))
-                    }
+                    {categories.map((cat) => (
+                        <option key={cat.Id} value={cat.Slug}>
+                            {cat.Name}
+                        </option>
+                    ))}
                 </select>
             </div>
         </div>
-    )
+    );
 }

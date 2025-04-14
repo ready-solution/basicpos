@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 type OrderDetail = {
     ProductId: number;
     Qty: number;
     TotalPrice: number;
     Order: {
-        createdAt: Date; // ISO date string
+        createdAt: Date;
     };
     Product: {
         Name: string;
@@ -24,17 +24,29 @@ type Category = {
     Name: string;
 };
 
+type Product = {
+    Id: number;
+    Name: string;
+    Slug: string;
+    categoryId: number;
+    Available: boolean;
+};
+
 type Props = {
     orderDetails: OrderDetail[];
     categories: Category[];
+    products: Product[];
 };
 
-export default function ProductPerformanceReport({ orderDetails, categories }: Props) {
+export default function ProductPerformanceReport({ orderDetails, categories, products }: Props) {
     const [range, setRange] = useState<"daily" | "weekly" | "monthly">("daily");
     const [categoryId, setCategoryId] = useState<number | "all">("all");
     const [search, setSearch] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const now = new Date();
+
     const filtered = useMemo(() => {
         return orderDetails.filter((detail) => {
             const created = new Date(detail.Order.createdAt);
@@ -53,45 +65,60 @@ export default function ProductPerformanceReport({ orderDetails, categories }: P
     }, [orderDetails, range, categoryId]);
 
     const productMap = useMemo(() => {
-        const map: Record<number, {
-            name: string;
-            slug: string;
-            category: string;
-            qty: number;
-            revenue: number;
-        }> = {};
-
+        const sales: Record<number, { qty: number; revenue: number }> = {};
         filtered.forEach((detail) => {
-            const pid = detail.ProductId;
-            if (!map[pid]) {
-                map[pid] = {
-                    name: detail.Product.Name,
-                    slug: detail.Product.Slug,
-                    category: detail.Product.Category.Name,
-                    qty: 0,
-                    revenue: 0,
-                };
+            if (!sales[detail.ProductId]) {
+                sales[detail.ProductId] = { qty: 0, revenue: 0 };
             }
-            map[pid].qty += detail.Qty;
-            map[pid].revenue += detail.TotalPrice;
+            sales[detail.ProductId].qty += detail.Qty;
+            sales[detail.ProductId].revenue += detail.TotalPrice;
         });
 
-        return Object.values(map);
-    }, [filtered]);
+        return products
+            .filter(product => {
+                const hadSales = !!sales[product.Id];
+                return product.Available || hadSales;
+            })
+            .map(product => {
+                const sale = sales[product.Id] || { qty: 0, revenue: 0 };
+                const category = categories.find(c => c.Id === product.categoryId)?.Name || "-";
+
+                return {
+                    name: product.Name,
+                    slug: product.Slug,
+                    category,
+                    qty: sale.qty,
+                    revenue: sale.revenue,
+                    available: product.Available,
+                };
+            });
+    }, [filtered, products, categories]);
+
 
     const bestQty = Math.max(...productMap.map(p => p.qty));
     const sortedProducts = productMap
         .filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
-        .sort((a, b) => b.revenue - a.revenue);
+        .sort((a, b) => b.qty - a.qty);
+
+    const totalPages = Math.ceil(sortedProducts.length / pageSize);
+    const paginatedProducts = sortedProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
     const formatIDR = (num: number) =>
-        num.toLocaleString("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 });
+        num.toLocaleString("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+        });
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [range, categoryId, search, pageSize]);
 
     return (
-        <div className="bg-white p-6 rounded shadow-md w-full max-w-6xl mx-auto mt-8">
-            <div className="flex justify-between items-center mb-4">
+        <div className="bg-white p-6 rounded shadow-md w-full max-w-6xl mx-auto my-8">
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                 <h2 className="text-lg font-semibold text-zinc-800">Product Performance</h2>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                     <select
                         value={range}
                         onChange={(e) => setRange(e.target.value as any)}
@@ -123,6 +150,41 @@ export default function ProductPerformanceReport({ orderDetails, categories }: P
                 </div>
             </div>
 
+            <div className="flex items-center justify-between my-4 text-sm">
+                <div className="flex items-center gap-2">
+                    <label>Show</label>
+                    <select
+                        value={pageSize}
+                        onChange={(e) => setPageSize(parseInt(e.target.value))}
+                        className="border rounded px-2 py-1"
+                    >
+                        {[5, 10, 20, 30].map((num) => (
+                            <option key={num} value={num}>{num}</option>
+                        ))}
+                    </select>
+                    <span>entries</span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-2 py-1 border rounded disabled:opacity-50"
+                    >
+                        Prev
+                    </button>
+                    <span>Page {currentPage} of {totalPages}</span>
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-2 py-1 border rounded disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+                </div>
+            </div>
+
+
             <table className="w-full text-sm text-left border">
                 <thead className="bg-zinc-100 text-zinc-700">
                     <tr>
@@ -133,11 +195,16 @@ export default function ProductPerformanceReport({ orderDetails, categories }: P
                     </tr>
                 </thead>
                 <tbody>
-                    {sortedProducts.map((p, i) => (
-                        <tr key={i} className="border-t hover:bg-zinc-50">
+                    {paginatedProducts.map((p, i) => (
+                        <tr
+                            key={i}
+                            className={`border-t hover:bg-zinc-50 ${!p.available ? "bg-red-100" : ""}`}
+                        >
                             <td className="px-4 py-2 font-medium">
-                                {p.name} {p.qty === bestQty ? <span className="ml-2 text-green-600 text-xs">Best Seller</span> : null}
+                                {p.name}
+                                {p.qty === bestQty ? <span className="ml-2 text-green-600 text-xs">Best Seller</span> : null}
                                 {p.qty < 3 && p.qty !== bestQty ? <span className="ml-2 text-orange-500 text-xs">Slow Moving</span> : null}
+                                {!p.available ? <span className="ml-2 text-red-600 text-xs">(Deleted)</span> : null}
                             </td>
                             <td className="px-4 py-2">{p.category}</td>
                             <td className="px-4 py-2 text-right">{p.qty}</td>

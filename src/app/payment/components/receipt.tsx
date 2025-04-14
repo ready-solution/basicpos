@@ -140,7 +140,10 @@ export default function Receipt({ order, storeName, storeAddress, storeContact }
     return (
         <PDFViewer style={{ width: '100%', height: '100%' }}>
             <Document>
-                <Page size="A6" style={styles.page}>
+                <Page
+                    size={{ width: 298.5, height: order.OrderDetails.length * 35 + 250 }}
+                    style={styles.page}
+                >
                     {/* Store Information */}
                     <View style={styles.storeInfo}>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>
@@ -149,7 +152,7 @@ export default function Receipt({ order, storeName, storeAddress, storeContact }
                         <Text style={styles.smallText}>{storeAddress}</Text>
                         <Text style={styles.smallText}>{storeContact}</Text>
                     </View>
-                    
+
                     <View style={styles.invoiceNo}>
                         <Text>
                             {InvoiceNo}

@@ -95,7 +95,7 @@ export default async function ManualUploadPage() {
                     </form>
                 </div>
 
-                <VariantForm products={productList} />
+                {/* <VariantForm products={productList} /> */}
             </div>
         </div>
     );

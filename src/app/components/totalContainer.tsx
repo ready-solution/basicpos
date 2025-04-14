@@ -42,7 +42,7 @@ export default async function TotalContainer() {
     return (
         <div className="w-full flex flex-col justify-between">
             <div className="text-sm">
-                <div className="w-full bg-zinc-200 text-zinc-700 rounded-lg">
+                <div className="w-full bg-zinc-200 text-zinc-800 rounded">
                     <div className="px-2 flex justify-between py-2">
                         <p>Subtotal</p>
                         <p>

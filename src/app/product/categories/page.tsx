@@ -2,6 +2,7 @@ import prisma from "@/lib/db";
 import { addCategory } from "@/actions/actions";
 import Link from "next/link";
 import { BiArrowBack } from "react-icons/bi";
+import { CategoryBatchUpload } from "../components/categoryBatchUpload";
 
 export default async function CategoriesPage() {
     const categoryList = await prisma.category.findMany({
@@ -58,6 +59,7 @@ export default async function CategoriesPage() {
                         </tbody>
                     </table>
                 </div>
+                <CategoryBatchUpload />
             </div>
         </div>
     );
