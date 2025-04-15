@@ -7,7 +7,7 @@ import AddVariantButton from "../components/addVariantButton";
 import Link from "next/link";
 import { BiArrowBack } from "react-icons/bi";
 
-export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
+export default async function ProductDetailPage({ params }: { params: any }) {
     const { slug } = await params;
 
     // Fetch product details, including its variants

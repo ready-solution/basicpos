@@ -8,6 +8,7 @@ import prisma from "@/lib/db";
 interface Category {
     Id: number;
     Name: string;
+    Slug: string;
 }
 
 export default function AddProduct({ categoryList }: { categoryList: Category[] }) {
@@ -112,7 +113,7 @@ export default function AddProduct({ categoryList }: { categoryList: Category[] 
                     </form>
                 </div>
             ) : (
-                <ExcelUpload />
+                <ExcelUpload categoryList={categoryList} />
             )}
         </div>
     )

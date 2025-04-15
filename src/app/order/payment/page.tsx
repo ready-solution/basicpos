@@ -3,14 +3,16 @@ import PaymentMethod from "@/app/components/paymentMethod";
 import PaymentButton from "@/app/components/payButton";
 import Changes from "@/app/components/changes";
 
-export default async function PaymentPage(props: {
-    searchParams?: Promise<{
-        method?: string;
-    }>;
-}) {
-    const searchParams = await props.searchParams;
-    const methodQuery = searchParams?.method || "";
+export const dynamic = "force-dynamic";
 
+export default async function PaymentPage({
+    searchParams,
+  }: {
+    searchParams?: any; // ← hack to bypass the typing issue
+  }) {
+    const { method = "" } = await searchParams || {};
+    const methodQuery = method;
+  
     const cart = await prisma.cart.findFirst({
         where: { Status: { contains: "active" } },
         include: {

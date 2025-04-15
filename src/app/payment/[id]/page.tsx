@@ -1,7 +1,7 @@
 import prisma from '@/lib/db';
 import Receipt from '../components/receipt';
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params }: { params: any }) {
     const { id } = await params; // ← safest across environments
 
     const order = await prisma.order.findUnique({

@@ -40,10 +40,10 @@ export async function addToCart(formData: FormData) {
 
     // Step 3: If the product has variants, find the correct variant by size & color
     if (product.Variants.length > 0) {
-        const selectedVariant = product.Variants.find(v =>
+        const selectedVariant = product.Variants.find((v: any) =>
             (v.Size === size || v.Size === null) &&
             (v.Color === color || v.Color === null)
-        );
+        );        
 
         if (!selectedVariant) {
             throw new Error("Selected variant does not exist.");
