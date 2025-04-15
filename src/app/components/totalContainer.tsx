@@ -19,15 +19,15 @@ export default async function TotalContainer() {
         }
     });
 
-    const discountValue = cartTotalValue?.CartItems.reduce((totalDiscount, item) => {
+    const discountValue = cartTotalValue?.CartItems.reduce((totalDiscount: number, item: any) => {
         return totalDiscount + (item.Discount ?? 0);
     }, 0);
 
-    const subtotal = cartTotalValue?.CartItems.reduce((total, item) => {
+    const subtotal = cartTotalValue?.CartItems.reduce((total: number, item: any) => {
         const product = item.Product;
     
         // Find the matching variant using VariantId from CartItem
-        const matchedVariant = product.Variants.find(v => v.Id === item.VariantId);
+        const matchedVariant = product.Variants.find((v: any) => v.Id === item.VariantId);
     
         const price =
             product?.Price && product.Price > 0

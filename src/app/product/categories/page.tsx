@@ -53,7 +53,7 @@ export default async function CategoriesPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {categoryList.map((x) => (
+                            {categoryList.map((x: any) => (
                                 <tr key={x.Id}>
                                     <td className="px-4 py-2 text-gray-900 font-medium">{x.Id}</td>
                                     <td className="px-4 py-2 text-gray-700">{x.Name}</td>

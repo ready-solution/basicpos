@@ -29,7 +29,7 @@ export default async function ProductPage(props: {
     });
 
     const categoryList = await prisma.category.findMany();
-    const categoryMap = categoryList.reduce((map, category) => {
+    const categoryMap = categoryList.reduce((map: any, category: any) => {
         map[category.Id] = category.Name;
         return map;
     }, {} as Record<number, string>);

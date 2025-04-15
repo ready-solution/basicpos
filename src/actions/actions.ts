@@ -43,7 +43,7 @@ export async function addToCart(formData: FormData) {
         const selectedVariant = product.Variants.find((v: any) =>
             (v.Size === size || v.Size === null) &&
             (v.Color === color || v.Color === null)
-        );        
+        );
 
         if (!selectedVariant) {
             throw new Error("Selected variant does not exist.");
@@ -215,12 +215,12 @@ export async function payment(formData: FormData) {
     const invoiceCode: string = `${formattedDate}${timeStamp}${randomString}`;
 
     // Calculate Subtotal & Discount
-    const subTotal = currCart.CartItems.reduce((total, item) => {
+    const subTotal = currCart.CartItems.reduce((total: number, item: any) => {
         const price = item.Variant ? item.Variant.Price : item.Product.Price;
         return total + price * item.Quantity;
     }, 0);
 
-    const discountValue = currCart.CartItems.reduce((totalDiscount, item) => {
+    const discountValue = currCart.CartItems.reduce((totalDiscount: number, item: any) => {
         return totalDiscount + (item.Discount ?? 0);
     }, 0);
 
@@ -243,8 +243,8 @@ export async function payment(formData: FormData) {
     if (!newOrder) throw new Error("Failed to create order.");
 
     // Process Order Details & Reduce Stock
-    await prisma.$transaction(async (tx) => {
-        await Promise.all(currCart.CartItems.map(async (item) => {
+    await prisma.$transaction(async (tx: any) => {
+        await Promise.all(currCart.CartItems.map(async (item: any) => {
             const price = item.Variant ? item.Variant.Price : item.Product.Price;
 
             // Reduce stock (check if item is variant or product)
@@ -580,10 +580,10 @@ export async function batchAddCategories(names: string[]) {
         let finalSlug = baseSlug;
         if (similarSlugs.length > 0) {
             const usedNumbers = similarSlugs
-                .map(s => s.Slug.match(new RegExp(`^${baseSlug}-(\\d+)$`)))
-                .filter(Boolean)
-                .map(m => parseInt(m![1]))
-                .filter(n => !isNaN(n));
+                .map((s: { Slug: string }) => s.Slug.match(new RegExp(`^${baseSlug}-(\\d+)$`)))
+                .filter((m: RegExpMatchArray | null): m is RegExpMatchArray => m !== null)
+                .map((m: RegExpMatchArray) => parseInt(m[1]))
+                .filter((n: number) => !isNaN(n));
 
             const nextNumber = usedNumbers.length > 0 ? Math.max(...usedNumbers) + 1 : 1;
             finalSlug = `${baseSlug}-${nextNumber}`;

@@ -25,8 +25,8 @@ export default async function PaymentPage({
         }
     });
 
-    const discountValue = cart?.CartItems.reduce((total, item) => total + (item.Discount ?? 0), 0) ?? 0;
-    const subtotal = cart?.CartItems.reduce((total, item) => {
+    const discountValue = cart?.CartItems.reduce((total: number, item: any) => total + (item.Discount ?? 0), 0) ?? 0;
+    const subtotal = cart?.CartItems.reduce((total: number, item: any) => {
         const price = item.Product.Price > 0 ? item.Product.Price : item.Variant?.Price || 0;
         return total + (price * item.Quantity);
     }, 0) ?? 0;
@@ -38,7 +38,7 @@ export default async function PaymentPage({
             <div className="flex flex-col items-center pb-10 mt-5 space-y-3 font-mono text-sm text-black">
                 <h2 className="text-center font-semibold uppercase text-xs tracking-widest">Order Receipt</h2>
 
-                {cart?.CartItems.map((x, i) => {
+                {cart?.CartItems.map((x: any, i: number) => {
                     const price = x.Product.Price > 0 ? x.Product.Price : x.Variant?.Price || 0;
                     const total = price * x.Quantity;
 

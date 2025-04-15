@@ -23,17 +23,17 @@ export default async function CartContainer() {
         <div className="w-full flex-1 pb-5">
             {(cartItems?.length ?? 0) > 0 ? (
                 <div className="h-full max-h-[60vh] rounded-md space-y-2 p-2 overflow-y-auto overflow-x-hidden scrollbar-hidden">
-                    {cart?.CartItems.map((item, idx) => (
+                    {cart?.CartItems.map((item: any, idx: number) => (
                         <CartCard
-                            key={idx}
-                            id={item.Id}
-                            name={item.Product.Name}
-                            price={item.Price}
-                            qty={item.Quantity}
-                            discount={item.Discount ?? 0}
-                            size={item.Variant?.Size ?? null}  // Pass variant size
-                            color={item.Variant?.Color ?? null} // Pass variant color
-                        />
+                        key={idx}
+                        id={item.Id}
+                        name={item.Product.Name}
+                        price={item.Product.Price > 0 ? item.Product.Price : item.Variant?.Price || 0}
+                        qty={item.Quantity}
+                        discount={item.Discount ?? 0}
+                        size={item.Variant?.Size}
+                        color={item.Variant?.Color}
+                      />
                     ))}
                 </div>
             ) : (

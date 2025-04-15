@@ -53,7 +53,7 @@ export default async function ManualUploadPage() {
                                     required
                                     className="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-white focus:ring-2 focus:ring-zinc-500"
                                 >
-                                    {categoryList.map((category) => (
+                                    {categoryList.map((category: any) => (
                                         <option key={category.Id} value={category.Id}>
                                             {category.Name}
                                         </option>
