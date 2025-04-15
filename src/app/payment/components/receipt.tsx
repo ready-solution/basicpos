@@ -141,7 +141,7 @@ export default function Receipt({ order, storeName, storeAddress, storeContact }
         <PDFViewer style={{ width: '100%', height: '100%' }}>
             <Document>
                 <Page
-                    size={{ width: 298.5, height: order.OrderDetails.length * 35 + 250 }}
+                    size={{ width: 298.5, height: order.OrderDetails.length * 30 + 280 }}
                     style={styles.page}
                 >
                     {/* Store Information */}

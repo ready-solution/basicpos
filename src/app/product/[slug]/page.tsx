@@ -1,5 +1,5 @@
 import prisma from "@/lib/db";
-import { Params } from "next/dist/server/request/params";
+// import { Params } from "next/dist/server/request/params";
 import ProductDetailClient from "@/app/components/productDetailClient";
 import CategorySelect from "../components/categorySelect";
 import StockChangeInput from "../components/stockChange";
@@ -7,7 +7,7 @@ import AddVariantButton from "../components/addVariantButton";
 import Link from "next/link";
 import { BiArrowBack } from "react-icons/bi";
 
-export default async function ProductDetailPage({ params }: { params: Params }) {
+export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
     const { slug } = await params;
 
     // Fetch product details, including its variants
