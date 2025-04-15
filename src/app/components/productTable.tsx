@@ -1,4 +1,3 @@
-// ProductTable - Matches OrderHistory layout for design continuity
 "use client";
 
 import { useState } from "react";
@@ -14,6 +13,7 @@ export default function ProductTable({
     productList: any[];
     categoryMap: Record<number, string>;
 }) {
+    const [sortBy, setSortBy] = useState<"name" | "enabled">("name");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     const [filterCategory, setFilterCategory] = useState<number | "all">("all");
     const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
@@ -29,13 +29,27 @@ export default function ProductTable({
             .catch((err) => alert(`Error deleting product ${err}`));
     };
 
+    const toggleSortOrder = (column: "name" | "enabled") => {
+        if (sortBy === column) {
+            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+        } else {
+            setSortBy(column);
+            setSortOrder("asc");
+        }
+    };
+
     const filteredProducts = productList.filter(
         (product) => filterCategory === "all" || product.categoryId === filterCategory
     );
 
     const sortedProducts = filteredProducts.sort((a, b) => {
-        const comparison = a.Name.localeCompare(b.Name);
-        return sortOrder === "asc" ? comparison : -comparison;
+        if (sortBy === "name") {
+            const comparison = a.Name.localeCompare(b.Name);
+            return sortOrder === "asc" ? comparison : -comparison;
+        } else {
+            const comparison = (a.Enabled === b.Enabled ? 0 : a.Enabled ? 1 : -1);
+            return sortOrder === "asc" ? comparison : -comparison;
+        }
     });
 
     const indexOfLast = currentPage * itemsPerPage;
@@ -56,7 +70,6 @@ export default function ProductTable({
         setSelectAll(!selectAll);
     };
 
-    const toggleSortOrder = () => setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     const handlePageChange = (page: number) => setCurrentPage(page);
     const goToPreviousPage = () => currentPage > 1 && setCurrentPage(currentPage - 1);
     const goToNextPage = () => {
@@ -97,18 +110,23 @@ export default function ProductTable({
                     <table className="min-w-full text-sm text-left">
                         <thead className="bg-zinc-200 text-gray-700">
                             <tr>
-                                <th className="px-4 py-2 text-left font-medium">
+                                <th className="px-4 py-2">
                                     <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
                                 </th>
-                                <th className="px-4 py-2 text-left font-medium">Name</th>
-                                <th className="px-4 py-2 text-left font-medium">Category</th>
-                                <th className="px-4 py-2 text-left font-medium">Price</th>
+                                <th
+                                    className="px-4 py-2 cursor-pointer font-medium"
+                                    onClick={() => toggleSortOrder("name")}
+                                >
+                                    Name {sortBy === "name" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+                                </th>
+                                <th className="px-4 py-2 font-medium">Category</th>
+                                <th className="px-4 py-2 font-medium">Price</th>
                                 <th className="px-4 py-2 text-center font-medium">Stock</th>
                                 <th
                                     className="px-4 py-2 text-center font-medium cursor-pointer"
-                                    onClick={toggleSortOrder}
+                                    onClick={() => toggleSortOrder("enabled")}
                                 >
-                                    Enabled {sortOrder === "asc" ? "↑" : "↓"}
+                                    Enabled {sortBy === "enabled" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
                                 </th>
                             </tr>
                         </thead>
@@ -122,15 +140,14 @@ export default function ProductTable({
                                             onChange={() => handleRowSelection(x.Id)}
                                         />
                                     </td>
-                                    <td className="px-4 py-2 text-gray-600">
-                                        <Link
-                                            href={`/product/${x.Slug}`}
-                                            className="text-zinc-700 hover:underline"
-                                        >
+                                    <td className="px-4 py-2 text-gray-700">
+                                        <Link href={`/product/${x.Slug}`} className="hover:underline">
                                             {x.Name} {x.Variants[0] ? "**" : ""}
                                         </Link>
                                     </td>
-                                    <td className="px-4 py-2 text-gray-600">{categoryMap[x.categoryId]}</td>
+                                    <td className="px-4 py-2 text-gray-600">
+                                        {categoryMap[x.categoryId]}
+                                    </td>
                                     <td className="px-4 py-2 text-gray-600">
                                         {x.Price.toLocaleString("id-ID", {
                                             style: "currency",
@@ -138,12 +155,12 @@ export default function ProductTable({
                                             minimumFractionDigits: 0,
                                         })}
                                     </td>
-                                    <td className="px-4 py-2 text-gray-600 text-center">
+                                    <td className="px-4 py-2 text-center text-gray-600">
                                         {x.Variants?.length > 0
                                             ? x.Variants.reduce((sum: number, v: any) => sum + (v.Stock || 0), 0)
                                             : x.Stock}
                                     </td>
-                                    <td className="px-4 py-2 text-gray-600 text-center">
+                                    <td className="px-4 py-2 text-center text-gray-600">
                                         <button
                                             onClick={() => handleProductEnabled(x.Id)}
                                             className={`relative cursor-pointer inline-flex items-center h-5 w-8 rounded-full transition ${x.Enabled ? "bg-emerald-800" : "bg-gray-300"}`}

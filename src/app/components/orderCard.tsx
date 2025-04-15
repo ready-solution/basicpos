@@ -38,7 +38,7 @@ export default async function ProductCard({ product, variant }: ProductCardProps
                 const hasVariant = productVariants.length > 0;
 
                 return (
-                    <div className="w-1/6 min-w-[140px]" key={x.Id}>
+                    <div className="w-1/6 min-w-[190px]" key={x.Id}>
                         {hasVariant ? (
                             <ModalCard product={x} variant={productVariants} />
                         ) : (

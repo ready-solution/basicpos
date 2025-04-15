@@ -32,7 +32,7 @@ export default function CategoryList({ categories }: CategoryListProps) {
     };
 
     return (
-        <div className="w-full max-w-full bg-zinc-200 px-1">
+        <div className="w-full rounded max-w-full bg-zinc-200 px-1">
             <div className="hidden sm:flex overflow-x-auto no-scrollbar gap-1 py-2 px-1">
                 <button
                     onClick={() => handleCategoryClick("")}

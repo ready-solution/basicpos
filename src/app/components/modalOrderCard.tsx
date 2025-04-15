@@ -62,18 +62,21 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
         setSelectedColor(event.target.value);
     };
 
+    const isOutOfStock =
+    variant.reduce((total, v) => total + v.Stock, 0) === 0;
+
     const isButtonDisabled = !selectedSize || !selectedColor;
 
     return (
         <div>
             <div className="text-sm w-full cursor-pointer" onClick={() => handleModalOpen(product)}>
-                <div className="bg-white shadow-zinc-600 shadow-sm hover:bg-slate-300 p-2 flex flex-col items-start border-1">
+                <div className={`${isOutOfStock ? 'bg-zinc-200 hover:bg-zinc-300' : 'bg-white hover:bg-slate-300'} shadow-zinc-600 shadow-sm  p-2 flex flex-col items-start border-1`}>
                     <h3
                         className="font-medium mb-3 truncate hover:overflow-visible hover:whitespace-normal"
                         title={product.Name}
                     >
-                        {product.Name.split('').slice(0, 15).join('')}
-                        {product.Name.split('').length > 15 && '...'}
+                        {product.Name.split('').slice(0, 18).join('')}
+                        {product.Name.split('').length > 18 && '...'}
                     </h3>
                     <div className="flex justify-between w-full items-end">
                         <p>
@@ -96,7 +99,7 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
                         transition={{ type: 'spring', stiffness: 1000, damping: 40 }}
                     >
                         <div
-                            className="bg-white p-6 w-[400px] shadow-lg"
+                            className="bg-white p-6 w-[400px] shadow-lg rounded"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="flex flex-col justify-between pb-5 border-b mb-5">

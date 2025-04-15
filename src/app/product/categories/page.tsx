@@ -7,7 +7,11 @@ import { CategoryBatchUpload } from "../components/categoryBatchUpload";
 export default async function CategoriesPage() {
     const categoryList = await prisma.category.findMany({
         include: {
-            products: true,
+            products: {
+                where: {
+                    Available: true,
+                },
+            },
         },
     });
 

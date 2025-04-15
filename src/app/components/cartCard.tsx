@@ -4,6 +4,7 @@ import { deleteFromCart, updateCartQty } from "@/actions/actions";
 import { motion } from "framer-motion";
 import { FaTrash } from "react-icons/fa";
 import AddDiscount from "./addDiscount";
+import toast from "react-hot-toast";
 
 interface CartCardProps {
     id: number;
@@ -19,10 +20,16 @@ export default function CartCard({ id, name, price, qty, discount, size, color }
     const finalPrice = price - discount;
     const subtotal = finalPrice * qty;
 
-    const handleQtyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleQtyChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const newQty = parseInt(e.target.value) || 1;
-        updateCartQty(id, newQty);
+        try {
+            await updateCartQty(id, newQty);
+        } catch (error: any) {
+            toast.error(error.message || "Failed to update quantity.");
+        }
     };
+
+
 
     return (
         <motion.div
@@ -80,7 +87,7 @@ export default function CartCard({ id, name, price, qty, discount, size, color }
                                 })}
                             </p>
                         )}
-                        
+
                     </div>
                 </div>
 

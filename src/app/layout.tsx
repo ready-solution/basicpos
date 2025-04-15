@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Toaster } from 'react-hot-toast';
 import Nav from "./components/nav";
 import "./globals.css";
 
@@ -19,6 +20,7 @@ export default function RootLayout({
         <div className="flex w-full">
           {children}
         </div>
+        <Toaster position="bottom-center" />
       </body>
     </html>
   );

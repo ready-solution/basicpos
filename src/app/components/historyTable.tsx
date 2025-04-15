@@ -33,7 +33,8 @@ export default function HistoryTable({ orderlist }: HistoryTableProps) {
         setCurrentPage(1);
     }, [startDate, endDate, searchInvoice, searchPayment]);
 
-    const filteredOrders = orderlist.filter((order) => {
+    const filteredOrders = orderlist
+    .filter((order) => {
         const created = new Date(order.createdAt);
         const start = startDate ? new Date(startDate) : null;
         const end = endDate ? new Date(endDate) : null;
@@ -44,7 +45,9 @@ export default function HistoryTable({ orderlist }: HistoryTableProps) {
             order.InvoiceNo.toLowerCase().includes(searchInvoice.toLowerCase()) &&
             order.PaymentType.toLowerCase().includes(searchPayment.toLowerCase())
         );
-    });
+    })
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // sort newest first
+
 
     const indexOfLastOrder = currentPage * itemsPerPage;
     const indexOfFirstOrder = indexOfLastOrder - itemsPerPage;

@@ -1,19 +1,30 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    CartesianGrid,
+    LineChart,
+    Line,
+} from "recharts";
 
-type Order = {
+interface Order {
     Total: number;
     createdAt: Date;
     PaymentType: string;
-};
+}
 
 export default function TotalSalesContainer({ orders }: { orders: Order[] }) {
     const [range, setRange] = useState<"daily" | "weekly" | "monthly">("daily");
 
     const filteredOrders = useMemo(() => {
         const now = new Date();
-        return orders.filter(order => {
+        return orders.filter((order) => {
             const created = new Date(order.createdAt);
             if (range === "daily") {
                 return (
@@ -55,6 +66,15 @@ export default function TotalSalesContainer({ orders }: { orders: Order[] }) {
         }));
     }, [filteredOrders]);
 
+    const salesTrend = useMemo(() => {
+        const map = new Map<string, number>();
+        filteredOrders.forEach((order) => {
+            const date = new Date(order.createdAt).toLocaleDateString("id-ID");
+            map.set(date, (map.get(date) || 0) + order.Total);
+        });
+        return Array.from(map.entries()).map(([date, total]) => ({ date, total }));
+    }, [filteredOrders]);
+
     const formatIDR = (num: number) =>
         num.toLocaleString("id-ID", {
             style: "currency",
@@ -64,7 +84,7 @@ export default function TotalSalesContainer({ orders }: { orders: Order[] }) {
 
     return (
         <div className="bg-white p-6 rounded shadow-md w-full max-w-6xl mx-auto mt-8">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-6">
                 <h2 className="text-lg font-semibold text-zinc-800">Sales Report</h2>
                 <select
                     value={range}
@@ -77,7 +97,7 @@ export default function TotalSalesContainer({ orders }: { orders: Order[] }) {
                 </select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-zinc-800">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-zinc-800 mb-6">
                 <div className="bg-zinc-100 p-4 rounded shadow-sm">
                     <p>Total Sales</p>
                     <p className="font-semibold text-lg">{formatIDR(totalSales)}</p>
@@ -92,19 +112,48 @@ export default function TotalSalesContainer({ orders }: { orders: Order[] }) {
                 </div>
             </div>
 
+            {range !== "daily" && salesTrend.length > 0 && (
+                <div className="mb-8">
+                    <p className="text-sm font-medium mb-3 text-zinc-700">Sales Trend</p>
+                    <ResponsiveContainer width="100%" height={250}>
+                        <LineChart data={salesTrend}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                            <XAxis dataKey="date" stroke="#6b7280" fontSize={12} />
+                            <YAxis stroke="#6b7280" fontSize={12} />
+                            <Tooltip formatter={(value) => formatIDR(value as number)} />
+                            <Line type="monotone" dataKey="total" stroke="#4B5563" strokeWidth={2} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+            )}
+
             {paymentBreakdown.length > 0 && (
-                <div className="mt-6">
-                    <p className="text-sm font-medium mb-2 text-zinc-700">Breakdown by Payment Method</p>
-                    <ul className="space-y-1 text-sm">
-                        {paymentBreakdown.map((pm, index) => (
-                            <li key={index} className="flex justify-between border-b py-1">
-                                <span>{pm.method}</span>
-                                <span>
-                                    {formatIDR(pm.total)} ({pm.count})
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <p className="text-sm font-medium mb-3 text-zinc-700">Payment Method Breakdown (by Total)</p>
+                        <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={paymentBreakdown}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                                <XAxis dataKey="method" stroke="#6b7280" fontSize={12} />
+                                <YAxis stroke="#6b7280" fontSize={12} />
+                                <Tooltip formatter={(value) => formatIDR(value as number)} labelStyle={{ fontWeight: 600 }} />
+                                <Bar dataKey="total" fill="#4B5563" radius={[4, 4, 0, 0]} barSize={40} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    <div>
+                        <p className="text-sm font-medium mb-3 text-zinc-700">Payment Frequency (by Count)</p>
+                        <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={paymentBreakdown}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                                <XAxis dataKey="method" stroke="#6b7280" fontSize={12} />
+                                <YAxis stroke="#6b7280" fontSize={12} />
+                                <Tooltip labelStyle={{ fontWeight: 600 }} />
+                                <Bar dataKey="count" fill="#6B7280" radius={[4, 4, 0, 0]} barSize={40} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
             )}
         </div>

@@ -151,7 +151,7 @@ export async function updateCartQty(id: number, qty: number) {
 
     // Ensure requested quantity does not exceed stock
     if (qty > stock) {
-        throw new Error(`Not enough stock available. Only ${stock} left.`);
+        throw new Error(`Not enough stock. ${stock} left.`);
     }
 
     // Calculate new total price

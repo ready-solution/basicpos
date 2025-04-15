@@ -1,6 +1,19 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    CartesianGrid,
+    PieChart,
+    Pie,
+    Cell,
+    Legend
+} from "recharts";
 
 type OrderDetail = {
     ProductId: number;
@@ -37,6 +50,8 @@ type Props = {
     categories: Category[];
     products: Product[];
 };
+
+const COLORS = ["#4B5563", "#9CA3AF", "#6B7280", "#D1D5DB", "#111827"];
 
 export default function ProductPerformanceReport({ orderDetails, categories, products }: Props) {
     const [range, setRange] = useState<"daily" | "weekly" | "monthly">("daily");
@@ -84,6 +99,7 @@ export default function ProductPerformanceReport({ orderDetails, categories, pro
                 const category = categories.find(c => c.Id === product.categoryId)?.Name || "-";
 
                 return {
+                    id: product.Id,
                     name: product.Name,
                     slug: product.Slug,
                     category,
@@ -94,11 +110,22 @@ export default function ProductPerformanceReport({ orderDetails, categories, pro
             });
     }, [filtered, products, categories]);
 
-
     const bestQty = Math.max(...productMap.map(p => p.qty));
     const sortedProducts = productMap
         .filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
         .sort((a, b) => b.qty - a.qty);
+
+    const topByRevenue = [...sortedProducts]
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 5);
+
+    const categoryRevenueData = useMemo(() => {
+        const map = new Map<string, number>();
+        productMap.forEach(p => {
+            map.set(p.category, (map.get(p.category) || 0) + p.revenue);
+        });
+        return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
+    }, [productMap]);
 
     const totalPages = Math.ceil(sortedProducts.length / pageSize);
     const paginatedProducts = sortedProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -150,6 +177,45 @@ export default function ProductPerformanceReport({ orderDetails, categories, pro
                 </div>
             </div>
 
+            <div className="grid md:grid-cols-2 gap-8 my-8">
+                <div>
+                    <h3 className="text-sm font-medium text-zinc-700 mb-2">Top 5 Products by Revenue</h3>
+                    <ResponsiveContainer width="100%" height={250}>
+                        <BarChart data={topByRevenue} layout="vertical">
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                            <XAxis type="number" stroke="#6b7280" fontSize={12} />
+                            <YAxis dataKey="name" type="category" stroke="#6b7280" fontSize={12} />
+                            <Tooltip formatter={(value) => formatIDR(value as number)} />
+                            <Bar dataKey="revenue" fill="#4B5563" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+
+                <div>
+                    <h3 className="text-sm font-medium text-zinc-700 mb-2">Revenue Distribution by Category</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                            <Pie
+                                data={categoryRevenueData}
+                                dataKey="value"
+                                nameKey="name"
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={100}
+                                fill="#8884d8"
+                                label
+                            >
+                                {categoryRevenueData.map((_, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Legend />
+                            <Tooltip formatter={(value) => formatIDR(value as number)} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
+
             <div className="flex items-center justify-between my-4 text-sm">
                 <div className="flex items-center gap-2">
                     <label>Show</label>
@@ -183,7 +249,6 @@ export default function ProductPerformanceReport({ orderDetails, categories, pro
                     </button>
                 </div>
             </div>
-
 
             <table className="w-full text-sm text-left border">
                 <thead className="bg-zinc-100 text-zinc-700">
