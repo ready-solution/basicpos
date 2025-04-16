@@ -21,6 +21,7 @@ type OrderDetail = {
     TotalPrice: number;
     Order: {
         createdAt: Date;
+        Status: string;
     };
     Product: {
         Name: string;
@@ -62,6 +63,18 @@ export default function ProductPerformanceReport({ orderDetails, categories, pro
 
     const now = new Date();
 
+    const CustomPieTooltip = ({ active, payload }: any) => {
+        if (!active || !payload || payload.length === 0) return null;
+
+        const { name, value } = payload[0];
+        return (
+            <div className="bg-white border border-zinc-200 shadow-lg rounded px-4 py-2 min-w-[140px]">
+                <p className="text-zinc-600 text-xs uppercase tracking-wide mb-1">{name}</p>
+                <p className="text-zinc-800 font-semibold text-sm">{formatIDR(value)}</p>
+            </div>
+        );
+    };
+
     const filtered = useMemo(() => {
         return orderDetails.filter((detail) => {
             const created = new Date(detail.Order.createdAt);
@@ -75,7 +88,9 @@ export default function ProductPerformanceReport({ orderDetails, categories, pro
 
             const inCategory = categoryId === "all" || detail.Product.categoryId === categoryId;
 
-            return inDateRange && inCategory;
+            const notCancelled = detail.Order.Status?.toLowerCase() !== "cancelled"; // 👈 new check
+
+            return inDateRange && inCategory && notCancelled;
         });
     }, [orderDetails, range, categoryId]);
 
@@ -183,7 +198,7 @@ export default function ProductPerformanceReport({ orderDetails, categories, pro
                     <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={topByRevenue} layout="vertical">
                             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                            <XAxis type="number" stroke="#6b7280" fontSize={12} />
+                            <XAxis type="number" stroke="#6b7280" fontSize={12} tickFormatter={(value) => formatIDR(value)} />
                             <YAxis dataKey="name" type="category" stroke="#6b7280" fontSize={12} />
                             <Tooltip formatter={(value) => formatIDR(value as number)} />
                             <Bar dataKey="revenue" fill="#4B5563" radius={[0, 4, 4, 0]} />
@@ -203,14 +218,14 @@ export default function ProductPerformanceReport({ orderDetails, categories, pro
                                 cy="50%"
                                 outerRadius={100}
                                 fill="#8884d8"
-                                label
+                                label={({ name, value }) => `${name}: ${formatIDR(value)}`}
                             >
                                 {categoryRevenueData.map((_, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
                             <Legend />
-                            <Tooltip formatter={(value) => formatIDR(value as number)} />
+                            <Tooltip formatter={(value) => formatIDR(value as number)} content={<CustomPieTooltip />} />
                         </PieChart>
                     </ResponsiveContainer>
                 </div>

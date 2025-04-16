@@ -17,34 +17,42 @@ interface Order {
     Total: number;
     createdAt: Date;
     PaymentType: string;
+    Status: string;
 }
 
 export default function TotalSalesContainer({ orders }: { orders: Order[] }) {
     const [range, setRange] = useState<"daily" | "weekly" | "monthly">("daily");
 
+    const now = new Date();
+
     const filteredOrders = useMemo(() => {
-        const now = new Date();
         return orders.filter((order) => {
             const created = new Date(order.createdAt);
-            if (range === "daily") {
-                return (
-                    created.getDate() === now.getDate() &&
+            const isInRange =
+                range === "daily"
+                    ? created.getDate() === now.getDate() &&
                     created.getMonth() === now.getMonth() &&
                     created.getFullYear() === now.getFullYear()
-                );
-            } else if (range === "weekly") {
-                const startOfWeek = new Date(now);
-                startOfWeek.setDate(now.getDate() - now.getDay());
-                startOfWeek.setHours(0, 0, 0, 0);
-                return created >= startOfWeek && created <= now;
-            } else if (range === "monthly") {
-                return (
-                    created.getMonth() === now.getMonth() &&
-                    created.getFullYear() === now.getFullYear()
-                );
-            }
-            return false;
+                    : range === "weekly"
+                        ? created >= new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay()) && created <= now
+                        : created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+            return isInRange && order.Status.toLowerCase() !== "cancelled";
         });
+    }, [range, orders]);
+
+    const cancelledCount = useMemo(() => {
+        return orders.filter((order) => {
+            const created = new Date(order.createdAt);
+            const isInRange =
+                range === "daily"
+                    ? created.getDate() === now.getDate() &&
+                    created.getMonth() === now.getMonth() &&
+                    created.getFullYear() === now.getFullYear()
+                    : range === "weekly"
+                        ? created >= new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay()) && created <= now
+                        : created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+            return isInRange && order.Status.toLowerCase() === "cancelled";
+        }).length;
     }, [range, orders]);
 
     const totalSales = filteredOrders.reduce((sum, o) => sum + o.Total, 0);
@@ -97,7 +105,7 @@ export default function TotalSalesContainer({ orders }: { orders: Order[] }) {
                 </select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-zinc-800 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-zinc-800 mb-6">
                 <div className="bg-zinc-100 p-4 rounded shadow-sm">
                     <p>Total Sales</p>
                     <p className="font-semibold text-lg">{formatIDR(totalSales)}</p>
@@ -109,6 +117,10 @@ export default function TotalSalesContainer({ orders }: { orders: Order[] }) {
                 <div className="bg-zinc-100 p-4 rounded shadow-sm">
                     <p>Average Transaction</p>
                     <p className="font-semibold text-lg">{formatIDR(avgTransaction)}</p>
+                </div>
+                <div className="bg-zinc-100 p-4 rounded shadow-sm">
+                    <p>Cancelled Orders</p>
+                    <p className="font-semibold text-lg">{cancelledCount}</p>
                 </div>
             </div>
 

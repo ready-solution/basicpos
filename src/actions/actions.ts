@@ -4,104 +4,78 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export async function addToCart(formData: FormData) {
-    const productId = Number(formData.get("productId"));
-    const size = formData.get("size") as string | null;
-    const color = formData.get("color") as string | null;
-    const quantity = Number(formData.get("quantity"));
+    try {
+        const productId = Number(formData.get("productId"));
+        const size = formData.get("size") as string | null;
+        const color = formData.get("color") as string | null;
+        const quantity = Number(formData.get("quantity"));
 
-    // Step 1: Find active cart or create a new one
-    let checkCart = await prisma.cart.findFirst({
-        where: { Status: "active" }
-    });
+        // Step 1: Find active cart or create one
+        let checkCart = await prisma.cart.findFirst({ where: { Status: "active" } });
+        let cartId = checkCart?.Id ?? (await prisma.cart.create({ data: { Status: "active" } })).Id;
 
-    let cartId = checkCart ? checkCart.Id : null;
-    if (!cartId) {
-        const newCart = await prisma.cart.create({
-            data: { Status: "active" }
+        // Step 2: Get product
+        const product = await prisma.product.findUnique({
+            where: { Id: productId },
+            include: { Variants: true },
         });
-        cartId = newCart.Id;
-    }
+        if (!product) return { success: false, error: "Product not found." };
 
-    // Step 2: Get product details
-    const product = await prisma.product.findUnique({
-        where: { Id: productId },
-        include: {
-            Variants: true, // Include variants to check if this product has any
-        }
-    });
+        let price = product.Price;
+        let stock = product.Stock;
+        let variantId: number | null = null;
 
-    if (!product) {
-        throw new Error("Product not found");
-    }
+        // Step 3: Variant check
+        if (product.Variants.length > 0) {
+            const selectedVariant = product.Variants.find(v =>
+                (v.Size === size || v.Size === null) && (v.Color === color || v.Color === null)
+            );
+            if (!selectedVariant) return { success: false, error: "Selected variant does not exist." };
 
-    let price = product.Price;
-    let stock = product.Stock; // Default stock for non-variant products
-    let variantId: number | null = null;
-
-    // Step 3: If the product has variants, find the correct variant by size & color
-    if (product.Variants.length > 0) {
-        const selectedVariant = product.Variants.find((v: any) =>
-            (v.Size === size || v.Size === null) &&
-            (v.Color === color || v.Color === null)
-        );
-
-        if (!selectedVariant) {
-            throw new Error("Selected variant does not exist.");
+            variantId = selectedVariant.Id;
+            price = selectedVariant.Price;
+            stock = selectedVariant.Stock;
         }
 
-        variantId = selectedVariant.Id;
-        price = selectedVariant.Price;
-        stock = selectedVariant.Stock;
-    } else {
-        // If product has variants, product stock should always be 0
-        stock = product.Variants.length > 0 ? 0 : product.Stock;
-    }
-
-    // Step 4: Check if requested quantity exceeds stock
-    if (quantity > stock) {
-        throw new Error("Not enough stock available.");
-    }
-
-    // Step 5: Check if the product (with or without variant) is already in cart
-    const existingCartItem = await prisma.cartItem.findFirst({
-        where: {
-            CartId: cartId,
-            ProductId: productId,
-            VariantId: variantId
+        // Step 4: Stock check
+        const existingCartItem = await prisma.cartItem.findFirst({
+            where: { CartId: cartId, ProductId: productId, VariantId: variantId },
+        });
+        const existingQty = existingCartItem?.Quantity ?? 0;
+        if ((existingQty + quantity) > stock) {
+            return { success: false, error: "Not enough stock available." };
         }
-    });
 
-    let totalPrice: number;
-    let discount = 0; // Default to no discount
+        // Step 5: Add/update cart
+        if (existingCartItem) {
+            const discount = existingCartItem.Discount ?? 0;
+            const totalPrice = (existingQty + quantity) * price - discount * (existingQty + quantity);
+            await prisma.cartItem.update({
+                where: { Id: existingCartItem.Id },
+                data: {
+                    Quantity: existingQty + quantity,
+                    TotalPrice: totalPrice,
+                },
+            });
+        } else {
+            await prisma.cartItem.create({
+                data: {
+                    CartId: cartId,
+                    ProductId: productId,
+                    VariantId: variantId,
+                    Quantity: quantity,
+                    Price: price,
+                    TotalPrice: price * quantity,
+                },
+            });
+        }
 
-    if (existingCartItem) {
-        discount = existingCartItem.Discount ?? 0;
-        totalPrice = (existingCartItem.Quantity + quantity) * price;
-        totalPrice -= discount * (existingCartItem.Quantity + quantity);
-
-        await prisma.cartItem.update({
-            where: { Id: existingCartItem.Id },
-            data: {
-                Quantity: existingCartItem.Quantity + quantity,  // Adjust quantity
-                TotalPrice: totalPrice  // Recalculate total price
-            }
-        });
-    } else {
-        // Step 6: If product (or variant) doesn't exist in cart, create a new cart item
-        await prisma.cartItem.create({
-            data: {
-                CartId: cartId,
-                ProductId: productId,
-                VariantId: variantId,
-                Quantity: quantity,
-                Price: price,
-                TotalPrice: price * quantity
-            }
-        });
+        revalidatePath("/order");
+        return { success: true };
+    } catch (err: any) {
+        console.error("Server Error:", err);
+        return { success: false, error: err.message || "Internal server error." };
     }
-
-    // Step 7: Revalidate order page after adding to cart
-    revalidatePath("/order");
 }
 
 export async function clearCart(id: string) {
@@ -151,7 +125,7 @@ export async function updateCartQty(id: number, qty: number) {
 
     // Ensure requested quantity does not exceed stock
     if (qty > stock) {
-        throw new Error(`Not enough stock. ${stock} left.`);
+        throw new Error(`Not enough stock available.`);
     }
 
     // Calculate new total price
@@ -597,4 +571,12 @@ export async function batchAddCategories(names: string[]) {
         });
     }
     revalidatePath('/product/categories');
+}
+
+export async function cancelOrder(id: string) {
+    await prisma.order.update({
+        where: { Id: id },
+        data: { Status: "cancelled" },
+    });
+    revalidatePath('/history');
 }

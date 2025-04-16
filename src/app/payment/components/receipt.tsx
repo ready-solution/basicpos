@@ -74,6 +74,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginVertical: 3,
         fontSize: 12
+    },
+    cancelledText: {
+        textDecoration: 'line-through',
     }
 });
 
@@ -154,7 +157,7 @@ export default function Receipt({ order, storeName, storeAddress, storeContact }
                     </View>
 
                     <View style={styles.invoiceNo}>
-                        <Text>
+                        <Text style={Status.toLowerCase() === "cancelled" ? styles.cancelledText : undefined}>
                             {InvoiceNo}
                         </Text>
                     </View>

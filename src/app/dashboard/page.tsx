@@ -7,7 +7,8 @@ export default async function DashboardPage() {
         select: {
             Total: true,
             createdAt: true,
-            PaymentType: true
+            PaymentType: true,
+            Status: true
         },
     });
 
@@ -18,7 +19,8 @@ export default async function DashboardPage() {
             TotalPrice: true,
             Order: {
                 select: {
-                    createdAt: true
+                    createdAt: true,
+                    Status: true,
                 }
             },
             Product: {
@@ -42,7 +44,7 @@ export default async function DashboardPage() {
     });
 
     const products = await prisma.product.findMany();
-    
+
     return (
         <div className="w-full max-h-screen overflow-y-auto bg-zinc-100 p-4">
             <TotalSalesContainer orders={orders} />

@@ -4,6 +4,7 @@ import { FaThList } from "react-icons/fa";
 import { useState } from "react";
 import { addToCart } from "@/actions/actions";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 type Product = {
     Id: number;
@@ -63,7 +64,7 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
     };
 
     const isOutOfStock =
-    variant.reduce((total, v) => total + v.Stock, 0) === 0;
+        variant.reduce((total, v) => total + v.Stock, 0) === 0;
 
     const isButtonDisabled = !selectedSize || !selectedColor;
 
@@ -116,7 +117,27 @@ export default function ModalCard({ product, variant }: ProductCardProps) {
                             </div>
 
                             {/* Add to Cart Form */}
-                            <form action={addToCart} className="flex flex-col gap-4 text-sm pb-5">
+                            <form
+                                onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.currentTarget);
+
+                                    try {
+                                        const result = await addToCart(formData);
+                                        if (!result.success) {
+                                            toast.error(result.error || "Something went wrong.");
+                                            return;
+                                        }
+                                        toast.success("Added to cart!");
+                                        setIsModalOpen(false);
+                                    } catch (err: any) {
+                                        console.error("Add to cart failed:", err);
+                                        toast.error(err.message || "Something went wrong.");
+                                    }
+                                }}
+                                className="flex flex-col gap-4 text-sm pb-5"
+                            >
+
                                 <input type="hidden" name="productId" value={selectedProduct.Id} readOnly />
                                 <input type="hidden" name="quantity" value={1} readOnly />
 

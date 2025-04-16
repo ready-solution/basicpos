@@ -4,6 +4,8 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { TiArrowLeft, TiArrowRight } from "react-icons/ti";
+import { cancelOrder } from "@/actions/actions";
+import toast from "react-hot-toast";
 
 interface Order {
     Id: string;
@@ -34,19 +36,19 @@ export default function HistoryTable({ orderlist }: HistoryTableProps) {
     }, [startDate, endDate, searchInvoice, searchPayment]);
 
     const filteredOrders = orderlist
-    .filter((order) => {
-        const created = new Date(order.createdAt);
-        const start = startDate ? new Date(startDate) : null;
-        const end = endDate ? new Date(endDate) : null;
+        .filter((order) => {
+            const created = new Date(order.createdAt);
+            const start = startDate ? new Date(startDate) : null;
+            const end = endDate ? new Date(endDate) : null;
 
-        return (
-            (!start || created >= start) &&
-            (!end || created <= new Date(end.setHours(23, 59, 59, 999))) &&
-            order.InvoiceNo.toLowerCase().includes(searchInvoice.toLowerCase()) &&
-            order.PaymentType.toLowerCase().includes(searchPayment.toLowerCase())
-        );
-    })
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // sort newest first
+            return (
+                (!start || created >= start) &&
+                (!end || created <= new Date(end.setHours(23, 59, 59, 999))) &&
+                order.InvoiceNo.toLowerCase().includes(searchInvoice.toLowerCase()) &&
+                order.PaymentType.toLowerCase().includes(searchPayment.toLowerCase())
+            );
+        })
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // sort newest first
 
 
     const indexOfLastOrder = currentPage * itemsPerPage;
@@ -124,11 +126,12 @@ export default function HistoryTable({ orderlist }: HistoryTableProps) {
                                 <th className="px-4 py-2 text-right font-medium">Sub Total</th>
                                 <th className="px-4 py-2 text-right font-medium">Discount</th>
                                 <th className="px-4 py-2 text-right font-medium">Total</th>
+                                <th className="px-4 py-2 text-center font-medium">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {currentOrders.map((x) => (
-                                <tr key={x.Id}>
+                                <tr key={x.Id} className={x.Status === "cancelled" ? "bg-red-50" : ""}>
                                     <td className="px-4 py-2 font-medium text-blue-700">
                                         <Link href={`/payment/${x.Id}`}>{x.InvoiceNo}</Link>
                                     </td>
@@ -163,6 +166,31 @@ export default function HistoryTable({ orderlist }: HistoryTableProps) {
                                             minimumFractionDigits: 0,
                                         })}
                                     </td>
+                                    <td className="px-4 py-2 text-center">
+                                        {x.Status !== "cancelled" ? (
+                                            <button
+                                                onClick={async () => {
+                                                    if (!confirm("Cancel this order?")) return;
+
+                                                    const loadingToast = toast.loading("Cancelling order...");
+                                                    try {
+                                                        await cancelOrder(x.Id);
+                                                        toast.success("Order cancelled.");
+                                                        location.reload(); // optional: replace with optimistic update later
+                                                    } catch (err) {
+                                                        toast.error("Failed to cancel order.");
+                                                    } finally {
+                                                        toast.dismiss(loadingToast);
+                                                    }
+                                                }}
+                                                className="text-sm text-red-600 hover:underline hover:text-red-700 cursor-pointer"
+                                            >
+                                                Cancel
+                                            </button>
+                                        ) : (
+                                            <span className="text-gray-400 italic text-sm">Cancelled</span>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -183,8 +211,8 @@ export default function HistoryTable({ orderlist }: HistoryTableProps) {
                         key={i}
                         onClick={() => handlePageChange(i + 1)}
                         className={`w-8 h-8 text-sm rounded-full flex items-center justify-center transition-colors duration-200 ${currentPage === i + 1
-                                ? "bg-zinc-700 text-white"
-                                : "bg-gray-100 hover:bg-zinc-200"
+                            ? "bg-zinc-700 text-white"
+                            : "bg-gray-100 hover:bg-zinc-200"
                             }`}
                     >
                         {i + 1}
