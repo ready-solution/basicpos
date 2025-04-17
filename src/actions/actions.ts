@@ -574,9 +574,31 @@ export async function batchAddCategories(names: string[]) {
 }
 
 export async function cancelOrder(id: string) {
+    const orderDetails = await prisma.orderDetail.findMany({
+        where: { OrderId: id },
+    });
+
+    for (const item of orderDetails) {
+        if (item.VariantId) {
+            // Update ProductVariant stock
+            await prisma.productVariant.update({
+                where: { Id: item.VariantId },
+                data: { Stock: { increment: item.Qty } },
+            });
+        } else {
+            // Update Product stock
+            await prisma.product.update({
+                where: { Id: item.ProductId },
+                data: { Stock: { increment: item.Qty } },
+            });
+        }
+    }
+
+    // Cancel the order
     await prisma.order.update({
         where: { Id: id },
         data: { Status: "cancelled" },
     });
+
     revalidatePath('/history');
 }

@@ -27,13 +27,11 @@ export default async function Page({ params }: { params: any }) {
     }
 
     return (
-        <div className='w-full' id='element-to-print'>
-            <Receipt
-                order={order}
-                storeName={storeName}
-                storeAddress={storeAddress}
-                storeContact={storeContact}
-            />
-        </div>
+        <Receipt
+            order={order}
+            storeName={storeName}
+            storeAddress={storeAddress}
+            storeContact={storeContact}
+        />
     );
 }
