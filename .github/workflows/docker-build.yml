@@ -35,10 +35,11 @@ jobs:
         run: |
           docker build \
             --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            -t ghcr.io/erwindggr/basicpos:latest \
-            -t ghcr.io/erwindggr/basicpos:${{ env.VERSION }} .
+            -t ghcr.io/ready-solution/basicpos:latest \
+            -t ghcr.io/ready-solution/basicpos:${{ env.VERSION }} .
 
       - name: Push Docker images (latest + versioned)
         run: |
-          docker push ghcr.io/erwindggr/basicpos:latest
-          docker push ghcr.io/erwindggr/basicpos:${{ env.VERSION }}
+          docker push ghcr.io/ready-solution/basicpos:latest
+          docker push ghcr.io/ready-solution/basicpos:${{ env.VERSION }}
+
