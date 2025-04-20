@@ -22,7 +22,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/erwindggr/basicpos:latest .
+          docker build --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} -t ghcr.io/erwindggr/basicpos:latest .
 
       - name: Push Docker image
         run: |
