@@ -4,6 +4,8 @@ import Link from "next/link";
 import { BiArrowBack } from "react-icons/bi";
 import VariantForm from "./components/variantForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function ManualUploadPage() {
     const categoryList = await prisma.category.findMany();
     const productList = await prisma.product.findMany({ where: { Available: true } });

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { BiArrowBack } from "react-icons/bi";
 import { CategoryBatchUpload } from "../components/categoryBatchUpload";
 
+export const dynamic = "force-dynamic";
+
 export default async function CategoriesPage() {
     const categoryList = await prisma.category.findMany({
         include: {
