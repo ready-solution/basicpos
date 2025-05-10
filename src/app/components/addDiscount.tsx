@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { MdDiscount } from "react-icons/md";
 import { addDiscount } from "@/actions/actions";
 import { motion } from "framer-motion";
@@ -13,7 +14,6 @@ interface ItemProps {
 export default function AddDiscount({ id, discount }: ItemProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [off, setOff] = useState(discount);
-    const [showToast, setShowToast] = useState(false);
 
     const toggleModal = () => setIsModalOpen(prev => !prev);
     const closeModal = () => setIsModalOpen(false);
@@ -26,8 +26,7 @@ export default function AddDiscount({ id, discount }: ItemProps) {
     const updateDiscount = () => {
         addDiscount(id, off.toString());
         closeModal();
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 2000); // simple fade-out
+        toast.success("Discount applied!");
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -108,13 +107,6 @@ export default function AddDiscount({ id, discount }: ItemProps) {
                             </button>
                         </div>
                     </motion.div>
-                </div>
-            )}
-
-            {/* Toast */}
-            {showToast && (
-                <div className="fixed bottom-5 right-5 bg-green-600 text-white py-2 px-4 rounded shadow-lg text-sm z-[60]">
-                    Discount applied!
                 </div>
             )}
         </div>
