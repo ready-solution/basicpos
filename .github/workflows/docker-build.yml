@@ -34,7 +34,6 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
             -t ghcr.io/ready-solution/basicpos:latest \
             -t ghcr.io/ready-solution/basicpos:${{ env.VERSION }} .
 
